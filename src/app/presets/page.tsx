@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PresetCard } from "@/features/presets/components/preset-card";
@@ -17,11 +17,13 @@ import { useUrlItems } from "@/features/url-builder/hooks/use-url-items";
 function PresetCardWithItems({
   preset,
   siteId,
+  highlighted,
   onToggleFavorite,
   onDelete,
 }: {
   preset: Parameters<typeof PresetCard>[0]["preset"];
   siteId: string;
+  highlighted?: boolean;
   onToggleFavorite: Parameters<typeof PresetCard>[0]["onToggleFavorite"];
   onDelete: Parameters<typeof PresetCard>[0]["onDelete"];
 }) {
@@ -30,6 +32,7 @@ function PresetCardWithItems({
     <PresetCard
       preset={preset}
       urlItems={urlItems}
+      highlighted={highlighted}
       onToggleFavorite={onToggleFavorite}
       onDelete={onDelete}
     />
@@ -45,14 +48,20 @@ export default function PresetsPage() {
   const isLoading = presetsLoading || sitesLoading;
   const sitesMap = new Map(sites?.map((s) => [s.id, s]));
 
-  // 해시 기반 스크롤: 홈에서 수정 버튼으로 이동 시
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+
+  // 해시 기반 스크롤 + 강조: 홈에서 수정 버튼으로 이동 시
   useEffect(() => {
     if (isLoading) return;
-    const hash = window.location.hash.slice(1);
+    const hash = window.location.hash.slice(1); // "preset-{id}"
     if (!hash) return;
     const el = document.getElementById(hash);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
+      const presetId = hash.replace("preset-", "");
+      setHighlightedId(presetId);
+      const timer = setTimeout(() => setHighlightedId(null), 2000);
+      return () => clearTimeout(timer);
     }
   }, [isLoading]);
 
@@ -104,6 +113,7 @@ export default function PresetsPage() {
                     key={preset.id}
                     preset={preset}
                     siteId={siteId}
+                    highlighted={highlightedId === preset.id}
                     onToggleFavorite={(p) => toggleFavorite.mutate(p)}
                     onDelete={handleDelete}
                   />

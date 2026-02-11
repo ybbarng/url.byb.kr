@@ -21,12 +21,19 @@ interface UrlSegment {
 interface PresetCardProps {
   preset: Preset;
   urlItems?: UrlItem[];
+  highlighted?: boolean;
   onToggleFavorite: (preset: Preset) => void;
   onDelete: (id: string) => void;
 }
 
 /** 프리셋 카드: URL 미리보기, 열기, 복사, 즐겨찾기 토글, 삭제 */
-export function PresetCard({ preset, urlItems, onToggleFavorite, onDelete }: PresetCardProps) {
+export function PresetCard({
+  preset,
+  urlItems,
+  highlighted,
+  onToggleFavorite,
+  onDelete,
+}: PresetCardProps) {
   const { url, nameSegments, valueSegments } = useMemo(() => {
     const empty = { url: "", nameSegments: [] as UrlSegment[], valueSegments: [] as UrlSegment[] };
     if (!urlItems || urlItems.length === 0) return empty;
@@ -88,7 +95,10 @@ export function PresetCard({ preset, urlItems, onToggleFavorite, onDelete }: Pre
   }, [urlItems, preset]);
 
   return (
-    <Card id={`preset-${preset.id}`}>
+    <Card
+      id={`preset-${preset.id}`}
+      className={cn("transition-colors duration-700", highlighted && "ring-2 ring-primary")}
+    >
       <CardHeader className="flex flex-row items-start justify-between gap-2">
         <div className="space-y-2 min-w-0">
           <CardTitle className="text-base">{preset.name}</CardTitle>
