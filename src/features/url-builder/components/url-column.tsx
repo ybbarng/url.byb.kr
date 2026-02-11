@@ -70,6 +70,8 @@ export function UrlColumn({ siteId, category, selectedIds, onSelect, highlight }
         return value.replace(/^\/+/, "").replace(/\?+$/, "");
       case "query":
         return value.replace(/^\?+/, "");
+      case "domain":
+        return value.replace(/^\.+/, "").replace(/\/+$/, "");
       default:
         return value;
     }
