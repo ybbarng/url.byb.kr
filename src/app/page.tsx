@@ -26,7 +26,7 @@ const features = [
 
 export default function HomePage() {
   return (
-    <div className="space-y-8">
+    <div className="mx-auto max-w-5xl space-y-8">
       {/* 히어로 */}
       <section className="space-y-3 pt-4">
         <h1 className="text-3xl font-bold tracking-tight">URL Kit</h1>
