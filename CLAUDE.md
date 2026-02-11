@@ -14,7 +14,11 @@ pnpm lint         # Biome 린트 + 포맷 (자동 수정)
 pnpm lint:check   # Biome 체크 (수정 없이)
 pnpm test         # Vitest 테스트
 pnpm test:watch   # Vitest 워치 모드
+pnpm add <pkg>    # 의존성 추가 (npm install 사용 금지)
 ```
+
+> **참고**: pnpm v10은 보안상 postinstall 스크립트를 기본 차단합니다 (esbuild, msw, sharp 등).
+> 빌드/테스트 실패 시 `pnpm approve-builds`로 해당 패키지의 빌드 스크립트를 허용해야 할 수 있습니다.
 
 ## 기술 스택
 
