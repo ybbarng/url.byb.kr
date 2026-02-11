@@ -36,7 +36,7 @@ export function SiteCard({ site, onDelete }: SiteCardProps) {
 
         <div className="flex items-center gap-1 shrink-0">
           <TooltipProvider>
-            <Tooltip defaultOpen={urlItems != null && !hasNonProtocolItems}>
+            <Tooltip open={urlItems != null && !hasNonProtocolItems}>
               <TooltipTrigger asChild>
                 <Button asChild size="sm">
                   <Link href={`/builder?siteId=${site.id}`}>
