@@ -90,10 +90,10 @@ export function PresetCard({ preset, urlItems, onToggleFavorite, onDelete }: Pre
   return (
     <Card>
       <CardHeader className="flex flex-row items-start justify-between gap-2">
-        <div className="space-y-3 min-w-0">
+        <div className="space-y-2 min-w-0">
           <CardTitle className="text-base">{preset.name}</CardTitle>
           {nameSegments.length > 0 && (
-            <p className="text-sm break-all leading-relaxed">
+            <p className="text-sm break-all line-clamp-2">
               {nameSegments.map((seg) => (
                 <span
                   key={seg.key}
@@ -107,7 +107,7 @@ export function PresetCard({ preset, urlItems, onToggleFavorite, onDelete }: Pre
             </p>
           )}
           {valueSegments.length > 0 && (
-            <p className="font-mono text-xs break-all leading-relaxed">
+            <p className="font-mono text-xs break-all line-clamp-2">
               {valueSegments.map((seg) => (
                 <span
                   key={seg.key}
