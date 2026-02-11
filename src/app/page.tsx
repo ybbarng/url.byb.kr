@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { FavoriteList } from "@/features/favorites/components/favorite-list";
+import { usePresets } from "@/features/presets/hooks/use-presets";
 import { useSites } from "@/features/sites/hooks/use-sites";
 
 const features = [
@@ -35,7 +36,9 @@ const features = [
 
 export default function HomePage() {
   const { data: sites, isLoading } = useSites();
+  const { data: presets } = usePresets();
   const hasSites = !isLoading && sites && sites.length > 0;
+  const hasPresets = presets && presets.length > 0;
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
@@ -88,14 +91,23 @@ export default function HomePage() {
             ))}
           </section>
 
-          {/* 즐겨찾기 */}
-          <section className="space-y-3">
-            <h2 className="flex items-center gap-2 text-xl font-semibold">
-              <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-              즐겨찾기
-            </h2>
-            <FavoriteList />
-          </section>
+          {/* 즐겨찾기 / 프리셋 안내 */}
+          {hasPresets ? (
+            <section className="space-y-3">
+              <h2 className="flex items-center gap-2 text-xl font-semibold">
+                <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                즐겨찾기
+              </h2>
+              <FavoriteList />
+            </section>
+          ) : (
+            <section className="rounded-lg border border-dashed p-8 text-center">
+              <p className="font-medium">저장된 프리셋이 없습니다</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                URL 빌더에서 조합을 저장해 보세요
+              </p>
+            </section>
+          )}
         </>
       )}
     </div>
