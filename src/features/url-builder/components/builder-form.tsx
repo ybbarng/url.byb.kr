@@ -198,6 +198,12 @@ export function BuilderForm({ siteId, presetId }: BuilderFormProps) {
   };
 
   const categories: UrlItemCategory[] = ["protocol", "subdomain", "domain", "path", "query"];
+  const hasDomain = itemsByCategory.domain.length > 0;
+
+  const getHighlight = (category: UrlItemCategory): boolean => {
+    if (category === "domain") return true;
+    return hasDomain && (category === "subdomain" || category === "path" || category === "query");
+  };
 
   return (
     <div className="space-y-6">
@@ -228,6 +234,7 @@ export function BuilderForm({ siteId, presetId }: BuilderFormProps) {
             category={category}
             selectedIds={getSelectedIds(category)}
             onSelect={handleSelect(category)}
+            highlight={getHighlight(category)}
           />
         ))}
       </div>

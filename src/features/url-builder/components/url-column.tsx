@@ -29,10 +29,12 @@ interface UrlColumnProps {
   /** 선택된 항목 ID (query는 여러 개 가능이므로 배열 사용) */
   selectedIds: string[];
   onSelect: (item: UrlItem) => void;
+  /** 항목이 비어 있을 때 추가 버튼을 강조 */
+  highlight?: boolean;
 }
 
 /** 카테고리별 세로 컬럼: 항목 목록 + 추가 버튼 */
-export function UrlColumn({ siteId, category, selectedIds, onSelect }: UrlColumnProps) {
+export function UrlColumn({ siteId, category, selectedIds, onSelect, highlight }: UrlColumnProps) {
   const { data: items, isLoading } = useUrlItemsByCategory(siteId, category);
   const createItem = useCreateUrlItem();
   const updateItem = useUpdateUrlItem();
@@ -109,7 +111,7 @@ export function UrlColumn({ siteId, category, selectedIds, onSelect }: UrlColumn
             onClick={handleAdd}
             className={cn(
               "rounded-md border border-dashed p-2 text-xs text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors",
-              category === "domain" && (!items || items.length === 0) && "animate-pulse border-primary/50 text-foreground",
+              highlight && (!items || items.length === 0) && "animate-pulse border-primary/50 text-foreground",
             )}
           >
             항목 추가
