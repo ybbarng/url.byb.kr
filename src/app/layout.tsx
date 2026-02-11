@@ -19,6 +19,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "URL Kit",
   description: "URL 구성요소를 관리하고 조합하는 도구",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
