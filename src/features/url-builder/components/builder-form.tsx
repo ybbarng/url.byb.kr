@@ -1,166 +1,197 @@
 "use client";
 
-import { ExternalLink } from "lucide-react";
-import { useMemo, useState } from "react";
-import { CopyButton } from "@/components/shared/copy-button";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useCallback, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { createPreset } from "@/lib/db/repositories/preset-repository";
 import { buildUrl } from "@/lib/url";
-import type { Site } from "@/types/site";
+import type { Preset } from "@/types/preset";
+import type { UrlItem, UrlItemCategory } from "@/types/url-item";
+import { useUrlItems } from "../hooks/use-url-items";
+import { PresetSaveDialog } from "./preset-save-dialog";
+import { UrlColumn } from "./url-column";
+import { UrlPreview } from "./url-preview";
 
 interface BuilderFormProps {
-  site: Site;
-  /** 프리셋 저장 콜백 */
-  onSavePreset?: (config: {
-    subdomain: string;
-    pathValues: Record<string, string>;
-    queryValues: Record<string, string>;
-  }) => void;
+  siteId: string;
 }
 
-/** 사이트의 구성요소를 선택해 URL을 빌드하는 폼 */
-export function BuilderForm({ site, onSavePreset }: BuilderFormProps) {
-  const [subdomain, setSubdomain] = useState("");
-  const [pathValues, setPathValues] = useState<Record<string, string>>({});
-  const [queryValues, setQueryValues] = useState<Record<string, string>>({});
+interface SelectionState {
+  protocolId: string | null;
+  subdomainId: string | null;
+  domainId: string | null;
+  pathId: string | null;
+  queryIds: string[];
+}
 
-  const url = useMemo(
-    () => buildUrl({ site, subdomain, pathValues, queryValues }),
-    [site, subdomain, pathValues, queryValues],
+/** 사이트의 구성요소를 구성하고 선택해 URL을 빌드하는 폼 */
+export function BuilderForm({ siteId }: BuilderFormProps) {
+  const { data: allItems } = useUrlItems(siteId);
+  const [selection, setSelection] = useState<SelectionState>({
+    protocolId: null,
+    subdomainId: null,
+    domainId: null,
+    pathId: null,
+    queryIds: [],
+  });
+  const [presetDialogOpen, setPresetDialogOpen] = useState(false);
+
+  // 카테고리별 아이템 분류
+  const itemsByCategory = useMemo(() => {
+    const map: Record<UrlItemCategory, UrlItem[]> = {
+      protocol: [],
+      subdomain: [],
+      domain: [],
+      path: [],
+      query: [],
+    };
+    for (const item of allItems ?? []) {
+      map[item.category].push(item);
+    }
+    // sortOrder로 정렬
+    for (const category of Object.keys(map) as UrlItemCategory[]) {
+      map[category].sort((a, b) => a.sortOrder - b.sortOrder);
+    }
+    return map;
+  }, [allItems]);
+
+  // 첫 프로토콜 자동 선택
+  const effectiveProtocolId = selection.protocolId ?? itemsByCategory.protocol[0]?.id ?? null;
+
+  // 아이템 ID → UrlItem 매핑
+  const itemMap = useMemo(() => {
+    const map = new Map<string, UrlItem>();
+    for (const item of allItems ?? []) {
+      map.set(item.id, item);
+    }
+    return map;
+  }, [allItems]);
+
+  // URL 빌드
+  const url = useMemo(() => {
+    const protocol = effectiveProtocolId ? itemMap.get(effectiveProtocolId) : null;
+    const domain = selection.domainId ? itemMap.get(selection.domainId) : null;
+
+    if (!protocol || !domain) return "";
+
+    return buildUrl({
+      protocol,
+      subdomain: selection.subdomainId ? (itemMap.get(selection.subdomainId) ?? null) : null,
+      domain,
+      path: selection.pathId ? (itemMap.get(selection.pathId) ?? null) : null,
+      queries: selection.queryIds
+        .map((id) => itemMap.get(id))
+        .filter((item): item is UrlItem => !!item),
+    });
+  }, [effectiveProtocolId, selection, itemMap]);
+
+  const handleSelect = useCallback(
+    (category: UrlItemCategory) => (item: UrlItem) => {
+      setSelection((prev) => {
+        switch (category) {
+          case "protocol":
+            return { ...prev, protocolId: prev.protocolId === item.id ? null : item.id };
+          case "subdomain":
+            return { ...prev, subdomainId: prev.subdomainId === item.id ? null : item.id };
+          case "domain":
+            return { ...prev, domainId: prev.domainId === item.id ? null : item.id };
+          case "path":
+            return { ...prev, pathId: prev.pathId === item.id ? null : item.id };
+          case "query": {
+            const has = prev.queryIds.includes(item.id);
+            return {
+              ...prev,
+              queryIds: has
+                ? prev.queryIds.filter((id) => id !== item.id)
+                : [...prev.queryIds, item.id],
+            };
+          }
+        }
+      });
+    },
+    [],
   );
 
-  const updatePathValue = (segmentId: string, value: string) => {
-    setPathValues((prev) => ({ ...prev, [segmentId]: value }));
+  const handleSavePreset = async (name: string) => {
+    if (!effectiveProtocolId || !selection.domainId) {
+      toast.error("프로토콜과 도메인은 필수입니다");
+      return;
+    }
+
+    const now = new Date().toISOString();
+    const preset: Preset = {
+      id: crypto.randomUUID(),
+      siteId,
+      name,
+      selectedProtocolId: effectiveProtocolId,
+      selectedSubdomainId: selection.subdomainId,
+      selectedDomainId: selection.domainId,
+      selectedPathId: selection.pathId,
+      selectedQueryIds: selection.queryIds,
+      isFavorite: false,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    await createPreset(preset);
+    toast.success("프리셋이 저장되었습니다");
+    setPresetDialogOpen(false);
   };
 
-  const updateQueryValue = (paramId: string, value: string) => {
-    setQueryValues((prev) => ({ ...prev, [paramId]: value }));
+  const getSelectedIds = (category: UrlItemCategory): string[] => {
+    switch (category) {
+      case "protocol":
+        return effectiveProtocolId ? [effectiveProtocolId] : [];
+      case "subdomain":
+        return selection.subdomainId ? [selection.subdomainId] : [];
+      case "domain":
+        return selection.domainId ? [selection.domainId] : [];
+      case "path":
+        return selection.pathId ? [selection.pathId] : [];
+      case "query":
+        return selection.queryIds;
+    }
   };
 
-  const handleOpen = () => {
-    window.open(url, "_blank");
-  };
+  const categories: UrlItemCategory[] = ["protocol", "subdomain", "domain", "path", "query"];
 
   return (
     <div className="space-y-6">
-      {/* 서브도메인 선택 */}
-      {site.subdomains.length > 0 && (
-        <div className="space-y-2">
-          <Label>서브도메인</Label>
-          <Select value={subdomain} onValueChange={setSubdomain}>
-            <SelectTrigger>
-              <SelectValue placeholder="서브도메인 선택" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__none__">없음</SelectItem>
-              {site.subdomains.map((sd) => (
-                <SelectItem key={sd.id} value={sd.value}>
-                  {sd.label} ({sd.value})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
+      {/* URL 미리보기 */}
+      <UrlPreview
+        url={url}
+        protocolValue={
+          effectiveProtocolId ? (itemMap.get(effectiveProtocolId)?.value ?? null) : null
+        }
+        subdomainValue={
+          selection.subdomainId ? (itemMap.get(selection.subdomainId)?.value ?? null) : null
+        }
+        domainValue={selection.domainId ? (itemMap.get(selection.domainId)?.value ?? null) : null}
+        pathValue={selection.pathId ? (itemMap.get(selection.pathId)?.value ?? null) : null}
+        queryValues={selection.queryIds
+          .map((id) => itemMap.get(id)?.value)
+          .filter((v): v is string => !!v)}
+        onSavePreset={() => setPresetDialogOpen(true)}
+      />
 
-      {/* 경로 세그먼트 선택 */}
-      {site.pathSegments
-        .filter((seg) => seg.type === "dynamic")
-        .map((segment) => (
-          <div key={segment.id} className="space-y-2">
-            <Label>{segment.label}</Label>
-            {segment.options && segment.options.length > 0 ? (
-              <Select
-                value={pathValues[segment.id] ?? ""}
-                onValueChange={(v) => updatePathValue(segment.id, v)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={`${segment.label} 선택`} />
-                </SelectTrigger>
-                <SelectContent>
-                  {segment.options.map((opt) => (
-                    <SelectItem key={opt.id} value={opt.value}>
-                      {opt.label} ({opt.value})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              <Input
-                placeholder={`${segment.label} 입력`}
-                value={pathValues[segment.id] ?? ""}
-                onChange={(e) => updatePathValue(segment.id, e.target.value)}
-              />
-            )}
-          </div>
+      {/* 5 컬럼 그리드 */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+        {categories.map((category) => (
+          <UrlColumn
+            key={category}
+            siteId={siteId}
+            category={category}
+            selectedIds={getSelectedIds(category)}
+            onSelect={handleSelect(category)}
+          />
         ))}
-
-      {/* 쿼리 파라미터 선택 */}
-      {site.queryParams.map((param) => (
-        <div key={param.id} className="space-y-2">
-          <Label>
-            {param.label} <span className="text-xs text-muted-foreground">({param.key})</span>
-          </Label>
-          {param.options && param.options.length > 0 ? (
-            <Select
-              value={queryValues[param.id] ?? ""}
-              onValueChange={(v) => updateQueryValue(param.id, v === "__none__" ? "" : v)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={`${param.label} 선택`} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">없음</SelectItem>
-                {param.options.map((opt) => (
-                  <SelectItem key={opt.id} value={opt.value}>
-                    {opt.label} ({opt.value})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : (
-            <Input
-              placeholder={`${param.label} 입력`}
-              value={queryValues[param.id] ?? ""}
-              onChange={(e) => updateQueryValue(param.id, e.target.value)}
-            />
-          )}
-        </div>
-      ))}
-
-      {/* URL 미리보기 및 액션 */}
-      <div className="space-y-3 rounded-lg border bg-muted/50 p-4">
-        <Label className="text-xs text-muted-foreground">빌드된 URL</Label>
-        <p className="break-all font-mono text-sm">{url}</p>
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={handleOpen} className="gap-1">
-            <ExternalLink className="h-4 w-4" />새 탭에서 열기
-          </Button>
-          <CopyButton text={url} />
-          {onSavePreset && (
-            <Button
-              variant="secondary"
-              onClick={() =>
-                onSavePreset({
-                  subdomain: subdomain === "__none__" ? "" : subdomain,
-                  pathValues,
-                  queryValues,
-                })
-              }
-            >
-              프리셋으로 저장
-            </Button>
-          )}
-        </div>
       </div>
+
+      {/* 프리셋 저장 다이얼로그 */}
+      <PresetSaveDialog
+        open={presetDialogOpen}
+        onOpenChange={setPresetDialogOpen}
+        onSave={handleSavePreset}
+      />
     </div>
   );
 }
