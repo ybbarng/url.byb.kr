@@ -1,35 +1,24 @@
-import type { Site } from "@/types/site";
+import type { UrlItem } from "@/types/url-item";
 
 interface BuildUrlParams {
-  site: Site;
-  /** 선택된 서브도메인 값 (빈 문자열이면 서브도메인 없음) */
-  subdomain: string;
-  /** 경로 세그먼트 ID → 값 매핑 (정적 세그먼트는 자동으로 value 사용) */
-  pathValues: Record<string, string>;
-  /** 쿼리 파라미터 ID → 값 매핑 */
-  queryValues: Record<string, string>;
+  protocol: UrlItem;
+  subdomain: UrlItem | null;
+  domain: UrlItem;
+  path: UrlItem | null;
+  queries: UrlItem[];
 }
 
-/** 사이트 템플릿과 선택된 값들로 URL을 빌드합니다 */
-export function buildUrl({ site, subdomain, pathValues, queryValues }: BuildUrlParams): string {
+/** 선택된 UrlItem들로 URL을 빌드합니다 */
+export function buildUrl({ protocol, subdomain, domain, path, queries }: BuildUrlParams): string {
   // 호스트 조합: 서브도메인 + 도메인
-  const host = subdomain ? `${subdomain}.${site.domain}` : site.domain;
+  const host = subdomain ? `${subdomain.value}.${domain.value}` : domain.value;
 
-  // 경로 조합: 각 세그먼트의 값을 순서대로 연결
-  const pathParts = site.pathSegments.map((segment) => {
-    if (segment.type === "static") {
-      return segment.value ?? "";
-    }
-    return pathValues[segment.id] ?? "";
-  });
-  const path = `/${pathParts.filter(Boolean).join("/")}`;
+  // 경로: 선행 / 없이 저장된 value에 / 추가
+  const pathPart = path ? `/${path.value}` : "/";
 
-  // 쿼리 파라미터 조합
-  const queryEntries = site.queryParams
-    .filter((param) => queryValues[param.id])
-    .map((param) => [param.key, queryValues[param.id]]);
-  const queryString = new URLSearchParams(queryEntries).toString();
+  // 쿼리: 각 아이템의 value는 "key=value" 형태, 여러 개 &로 join
+  const queryString = queries.map((q) => q.value).join("&");
 
-  const base = `${site.protocol}://${host}${path}`;
+  const base = `${protocol.value}://${host}${pathPart}`;
   return queryString ? `${base}?${queryString}` : base;
 }
