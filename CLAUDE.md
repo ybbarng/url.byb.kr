@@ -64,7 +64,17 @@ src/
   - 사이트 생성 시 기본 프로토콜(HTTPS, HTTP) 자동 생성
 - **Preset**: `{ id, siteId, name, selectedProtocolId, selectedSubdomainId, selectedDomainId, selectedPathId, selectedQueryIds[], isFavorite, createdAt, updatedAt }` — UrlItem ID 참조
 - 모든 ID는 `crypto.randomUUID()`, 날짜는 ISO 문자열
-- DB_VERSION=2, v1→v2 마이그레이션 시 기존 stores 삭제 후 재생성
+- DB_VERSION=2, 마이그레이션은 `src/lib/db/migrations/` 레지스트리로 관리
+
+## 마이그레이션 정책
+
+1. **store 삭제 금지** — 기존 store는 절대 삭제하지 않음
+2. **필드 삭제 금지** — 기존 필드는 삭제하지 않고 deprecated 처리
+3. **마이그레이션은 항상 데이터 변환** — 새 형태로 transform, 절대 drop & recreate 아님
+4. **마이그레이션 전 자동 백업** — `backup.ts`의 `exportAllData()`로 스냅샷 저장
+5. **마이그레이션 후 무결성 검증** — `integrity.ts`의 `validateIntegrity()` 실행, 실패 시 경고
+6. **마이그레이션 테스트 필수** — 새 마이그레이션 추가 시 반드시 테스트 동반
+7. **DB_VERSION 증가 시** — `migrations/index.ts`에 새 Migration 엔트리 추가, `schema.ts`에서 버전 올리기
 
 ## Git
 
