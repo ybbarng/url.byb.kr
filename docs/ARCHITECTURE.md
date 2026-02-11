@@ -16,8 +16,8 @@
 
 ### 1.3 상태 관리
 
-- **Zustand**: 글로벌 UI 상태 (테마, 사이드바 토글 등) 관리
 - **TanStack Query**: IndexedDB 데이터의 비동기 상태 관리 (캐싱, 무효화)
+- **Zustand**: 글로벌 UI 상태 관리 (필요 시 사용 가능, 현재 테마는 next-themes로 처리)
 - **React Hook Form + Zod**: 폼 상태 관리 및 검증
 
 ### 1.4 데이터 저장
@@ -45,12 +45,13 @@ src/
 ├── app/                          # Next.js App Router
 │   ├── layout.tsx                # 루트 레이아웃 (테마, 폰트, 공통 Provider)
 │   ├── page.tsx                  # 홈 페이지
+│   ├── globals.css               # 글로벌 스타일
 │   ├── sites/
 │   │   ├── page.tsx              # 사이트 목록
 │   │   ├── new/
 │   │   │   └── page.tsx          # 사이트 생성
-│   │   └── [id]/
-│   │       └── page.tsx          # 사이트 상세/수정
+│   │   └── edit/
+│   │       └── page.tsx          # 사이트 수정 (?id=xxx 쿼리 파라미터)
 │   ├── builder/
 │   │   └── page.tsx              # URL 빌더
 │   └── presets/
@@ -58,74 +59,71 @@ src/
 │
 ├── components/                   # 공통 컴포넌트
 │   ├── ui/                       # shadcn/ui 기반 기본 컴포넌트
+│   │   ├── badge.tsx
 │   │   ├── button.tsx
-│   │   ├── input.tsx
-│   │   ├── select.tsx
+│   │   ├── card.tsx
 │   │   ├── dialog.tsx
-│   │   └── ...
+│   │   ├── dropdown-menu.tsx
+│   │   ├── input.tsx
+│   │   ├── label.tsx
+│   │   ├── select.tsx
+│   │   ├── separator.tsx
+│   │   ├── sonner.tsx
+│   │   ├── switch.tsx
+│   │   └── tooltip.tsx
 │   ├── layout/                   # 레이아웃 컴포넌트
-│   │   ├── header.tsx
+│   │   ├── header.tsx            # 네비게이션 + 모바일 메뉴 + 테마 토글
 │   │   ├── footer.tsx
-│   │   └── navigation.tsx
+│   │   └── theme-toggle.tsx      # 다크/라이트 테마 토글
 │   └── shared/                   # 여러 feature에서 공유하는 컴포넌트
-│       ├── url-preview.tsx       # URL 미리보기
-│       └── copy-button.tsx       # 복사 버튼
+│       └── copy-button.tsx       # 클립보드 복사 버튼
 │
 ├── features/                     # 기능별 모듈
 │   ├── sites/                    # 사이트 관리
-│   │   ├── components/           # 사이트 관련 UI 컴포넌트
-│   │   │   ├── site-form.tsx
-│   │   │   ├── site-card.tsx
-│   │   │   ├── subdomain-editor.tsx
-│   │   │   ├── path-segment-editor.tsx
-│   │   │   └── query-param-editor.tsx
-│   │   ├── hooks/                # 사이트 관련 커스텀 훅
-│   │   │   └── use-sites.ts
-│   │   └── schemas/              # Zod 스키마
-│   │       └── site-schema.ts
+│   │   ├── components/
+│   │   │   ├── site-form.tsx     # 사이트 생성/수정 폼
+│   │   │   ├── site-card.tsx     # 사이트 목록 카드
+│   │   │   ├── option-list-editor.tsx  # 옵션 목록 편집기
+│   │   │   ├── path-segment-editor.tsx # 경로 세그먼트 편집기
+│   │   │   └── query-param-editor.tsx  # 쿼리 파라미터 편집기
+│   │   ├── hooks/
+│   │   │   └── use-sites.ts      # 사이트 CRUD TanStack Query 훅
+│   │   └── schemas/
+│   │       └── site-schema.ts    # Zod 스키마 (폼 검증)
 │   │
 │   ├── url-builder/              # URL 빌더
-│   │   ├── components/
-│   │   │   ├── builder-form.tsx
-│   │   │   ├── segment-selector.tsx
-│   │   │   └── query-selector.tsx
-│   │   ├── hooks/
-│   │   │   └── use-url-builder.ts
-│   │   └── utils/
-│   │       └── build-url.ts      # URL 조합 로직
+│   │   └── components/
+│   │       └── builder-form.tsx  # 사이트 선택 + 구성요소 조합 + 미리보기
 │   │
 │   ├── presets/                   # 프리셋
 │   │   ├── components/
-│   │   │   ├── preset-card.tsx
-│   │   │   └── preset-form.tsx
+│   │   │   └── preset-card.tsx   # 프리셋 카드 (열기/복사/즐겨찾기/삭제)
 │   │   └── hooks/
-│   │       └── use-presets.ts
+│   │       └── use-presets.ts    # 프리셋/즐겨찾기 TanStack Query 훅
 │   │
 │   └── favorites/                # 즐겨찾기
-│       ├── components/
-│       │   └── favorite-list.tsx
-│       └── hooks/
-│           └── use-favorites.ts
+│       └── components/
+│           └── favorite-list.tsx # 홈 화면 즐겨찾기 목록
 │
 ├── lib/                          # 라이브러리 및 유틸리티
 │   ├── db/                       # IndexedDB 관련
-│   │   ├── client.ts             # DB 연결 및 초기화
+│   │   ├── client.ts             # DB 연결 싱글턴 및 초기화
 │   │   ├── schema.ts             # DB 스키마 정의
 │   │   └── repositories/         # 데이터 접근 계층
 │   │       ├── site-repository.ts
 │   │       └── preset-repository.ts
-│   ├── utils/                    # 공통 유틸리티
-│   │   ├── cn.ts                 # clsx + tailwind-merge 래퍼
-│   │   └── url.ts                # URL 관련 유틸리티
+│   ├── url.ts                    # URL 빌드 유틸리티 (buildUrl)
+│   ├── utils.ts                  # clsx + tailwind-merge 래퍼 (cn)
 │   └── providers/                # React Context Provider
+│       ├── index.tsx             # 통합 Provider (Theme + Query + Tooltip)
 │       ├── theme-provider.tsx
 │       └── query-provider.tsx
 │
-├── stores/                       # Zustand 스토어
-│   └── ui-store.ts               # UI 상태 (테마, 레이아웃 등)
+├── test/                         # 테스트 설정
+│   └── setup.ts
 │
 └── types/                        # 공통 타입 정의
-    ├── site.ts                   # Site, SubdomainOption, PathSegment 등
+    ├── site.ts                   # Site, Option, PathSegment, QueryParamTemplate
     └── preset.ts                 # Preset 타입
 ```
 
@@ -138,7 +136,6 @@ src/
 ```
 [UI Component]
     ↕ React Hook Form (폼 상태)
-    ↕ Zustand (UI 상태)
     ↕ TanStack Query (비동기 상태 + 캐싱)
     ↕ Repository Layer (데이터 접근 추상화)
     ↕ idb (IndexedDB 래퍼)

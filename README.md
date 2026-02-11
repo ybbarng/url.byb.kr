@@ -87,20 +87,20 @@ url.byb.kr/
 ├── src/
 │   ├── app/               # Next.js App Router 페이지
 │   ├── components/        # 공통 UI 컴포넌트
-│   │   └── ui/            # shadcn/ui 기반 컴포넌트
+│   │   ├── ui/            # shadcn/ui 기반 컴포넌트
+│   │   ├── layout/        # 헤더, 푸터, 테마 토글
+│   │   └── shared/        # 공유 컴포넌트 (복사 버튼 등)
 │   ├── features/          # 기능별 모듈
 │   │   ├── sites/         # 사이트 관리
 │   │   ├── url-builder/   # URL 빌더
 │   │   ├── presets/       # 프리셋 관리
 │   │   └── favorites/     # 즐겨찾기
 │   ├── lib/               # 유틸리티 및 설정
-│   │   ├── db/            # IndexedDB 래퍼
-│   │   └── utils/         # 공통 유틸리티
-│   ├── stores/            # Zustand 스토어
+│   │   ├── db/            # IndexedDB 래퍼 및 Repository
+│   │   └── providers/     # React Context Provider
 │   └── types/             # 공통 타입 정의
 ├── biome.json             # Biome 설정
-├── next.config.ts         # Next.js 설정
-├── tailwind.config.ts     # Tailwind 설정
+├── next.config.ts         # Next.js 설정 (output: "export")
 └── tsconfig.json          # TypeScript 설정
 ```
 
