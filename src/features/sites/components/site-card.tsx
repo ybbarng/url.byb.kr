@@ -46,7 +46,7 @@ export function SiteCard({ site, onDelete }: SiteCardProps) {
                 </Button>
               </TooltipTrigger>
               {!hasNonProtocolItems && (
-                <TooltipContent side="top">
+                <TooltipContent side="top" className="animate-pulse-scale">
                   URL을 구성해 보세요!
                 </TooltipContent>
               )}

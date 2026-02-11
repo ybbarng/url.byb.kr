@@ -116,6 +116,15 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+@keyframes pulse-scale {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+@theme inline {
+  --animate-pulse-scale: pulse-scale 2s ease-in-out infinite;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
