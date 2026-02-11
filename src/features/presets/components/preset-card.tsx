@@ -88,7 +88,7 @@ export function PresetCard({ preset, urlItems, onToggleFavorite, onDelete }: Pre
   }, [urlItems, preset]);
 
   return (
-    <Card>
+    <Card id={`preset-${preset.id}`}>
       <CardHeader className="flex flex-row items-start justify-between gap-2">
         <div className="space-y-2 min-w-0">
           <CardTitle className="text-base">{preset.name}</CardTitle>

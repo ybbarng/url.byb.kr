@@ -1,28 +1,18 @@
 "use client";
 
-import { ExternalLink, Pencil, Star, Trash2 } from "lucide-react";
+import { ExternalLink, Pencil } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
+import { toast } from "sonner";
 import { CopyButton } from "@/components/shared/copy-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  useDeletePreset,
-  useFavorites,
-  useToggleFavorite,
-} from "@/features/presets/hooks/use-presets";
+import { useFavorites } from "@/features/presets/hooks/use-presets";
 import { useSites } from "@/features/sites/hooks/use-sites";
-import { CATEGORY_COLORS } from "@/features/url-builder/category-colors";
 import { useUrlItems } from "@/features/url-builder/hooks/use-url-items";
 import { buildUrl } from "@/lib/url";
 import type { Preset } from "@/types/preset";
-import type { UrlItem, UrlItemCategory } from "@/types/url-item";
-
-interface UrlSegment {
-  text: string;
-  category?: UrlItemCategory;
-  key: string;
-}
+import type { UrlItem } from "@/types/url-item";
 
 function FavoriteItem({
   preset,
@@ -33,148 +23,69 @@ function FavoriteItem({
   urlItems: UrlItem[];
   siteName?: string;
 }) {
-  const toggleFavorite = useToggleFavorite();
-  const deletePreset = useDeletePreset();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { url, nameSegments, valueSegments } = useMemo(() => {
-    const empty = { url: "", nameSegments: [] as UrlSegment[], valueSegments: [] as UrlSegment[] };
-    if (urlItems.length === 0) return empty;
+  const url = useMemo(() => {
+    if (urlItems.length === 0) return "";
 
     const itemMap = new Map(urlItems.map((item) => [item.id, item]));
     const protocol = itemMap.get(preset.selectedProtocolId);
-    const subdomain = preset.selectedSubdomainId
-      ? (itemMap.get(preset.selectedSubdomainId) ?? null)
-      : null;
     const domain = itemMap.get(preset.selectedDomainId);
-    const path = preset.selectedPathId ? (itemMap.get(preset.selectedPathId) ?? null) : null;
-    const queries = preset.selectedQueryIds
-      .map((id) => itemMap.get(id))
-      .filter((item): item is UrlItem => !!item);
 
-    if (!protocol || !domain) return empty;
+    if (!protocol || !domain) return "";
 
-    const builtUrl = buildUrl({ protocol, subdomain, domain, path, queries });
-
-    const names: UrlSegment[] = [];
-    const values: UrlSegment[] = [];
-
-    names.push({ text: protocol.name, category: "protocol", key: "protocol" });
-    values.push({ text: protocol.value, category: "protocol", key: "protocol" });
-    names.push({ text: "://", key: "sep-protocol" });
-    values.push({ text: "://", key: "sep-protocol" });
-
-    if (subdomain) {
-      names.push({ text: subdomain.name, category: "subdomain", key: "subdomain" });
-      values.push({ text: subdomain.value, category: "subdomain", key: "subdomain" });
-      names.push({ text: ".", key: "sep-subdomain" });
-      values.push({ text: ".", key: "sep-subdomain" });
-    }
-
-    names.push({ text: domain.name, category: "domain", key: "domain" });
-    values.push({ text: domain.value, category: "domain", key: "domain" });
-
-    if (path) {
-      names.push({ text: "/", key: "sep-path" });
-      values.push({ text: "/", key: "sep-path" });
-      names.push({ text: path.name, category: "path", key: "path" });
-      values.push({ text: path.value, category: "path", key: "path" });
-    }
-
-    if (queries.length > 0) {
-      names.push({ text: "?", key: "sep-query" });
-      values.push({ text: "?", key: "sep-query" });
-      queries.forEach((q, i) => {
-        if (i > 0) {
-          names.push({ text: "&", key: `sep-query-${q.id}` });
-          values.push({ text: "&", key: `sep-query-${q.id}` });
-        }
-        names.push({ text: q.name, category: "query", key: `query-${q.id}` });
-        values.push({ text: q.value, category: "query", key: `query-${q.id}` });
-      });
-    }
-
-    return { url: builtUrl, nameSegments: names, valueSegments: values };
+    return buildUrl({
+      protocol,
+      subdomain: preset.selectedSubdomainId
+        ? (itemMap.get(preset.selectedSubdomainId) ?? null)
+        : null,
+      domain,
+      path: preset.selectedPathId ? (itemMap.get(preset.selectedPathId) ?? null) : null,
+      queries: preset.selectedQueryIds
+        .map((id) => itemMap.get(id))
+        .filter((item): item is UrlItem => !!item),
+    });
   }, [urlItems, preset]);
+
+  const handleTouchStart = useCallback(() => {
+    timerRef.current = setTimeout(async () => {
+      if (url) {
+        await navigator.clipboard.writeText(url);
+        toast.success("URL이 복사되었습니다");
+      }
+    }, 500);
+  }, [url]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
 
   const title = siteName ? `[${siteName}] ${preset.name}` : preset.name;
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-start justify-between gap-2">
-        <div className="space-y-2 min-w-0">
-          <CardTitle className="text-base">{title}</CardTitle>
-          {nameSegments.length > 0 && (
-            <p className="text-sm truncate">
-              {nameSegments.map((seg) => (
-                <span
-                  key={seg.key}
-                  className={
-                    seg.category ? CATEGORY_COLORS[seg.category].activeText : "text-foreground/50"
-                  }
-                >
-                  {seg.text}
-                </span>
-              ))}
-            </p>
-          )}
-          {valueSegments.length > 0 && (
-            <p className="font-mono text-xs truncate">
-              {valueSegments.map((seg) => (
-                <span
-                  key={seg.key}
-                  className={
-                    seg.category
-                      ? CATEGORY_COLORS[seg.category].activeText
-                      : "text-muted-foreground"
-                  }
-                >
-                  {seg.text}
-                </span>
-              ))}
-            </p>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-1 shrink-0">
-          <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => toggleFavorite.mutate(preset)}
-              aria-label="즐겨찾기 해제"
-            >
-              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-            </Button>
-          </div>
-          <div className="flex gap-1">
-            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-              <Link href={`/builder?siteId=${preset.siteId}&presetId=${preset.id}`}>
-                <Pencil className="h-4 w-4" />
-                <span className="sr-only">편집</span>
-              </Link>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-destructive"
-              onClick={() => deletePreset.mutate(preset.id)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => url && window.open(url, "_blank")}
-              disabled={!url}
-            >
-              <ExternalLink className="h-4 w-4" />
-            </Button>
-            <CopyButton text={url} iconOnly className="h-8 w-8" />
-          </div>
+    <Card onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} onTouchMove={handleTouchEnd}>
+      <CardHeader className="flex flex-row items-center justify-between gap-2 py-3">
+        <CardTitle className="text-sm min-w-0 truncate">{title}</CardTitle>
+        <div className="flex gap-1 shrink-0">
+          <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+            <Link href={`/presets#preset-${preset.id}`}>
+              <Pencil className="h-4 w-4" />
+              <span className="sr-only">수정</span>
+            </Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => url && window.open(url, "_blank")}
+            disabled={!url}
+          >
+            <ExternalLink className="h-4 w-4" />
+          </Button>
+          <CopyButton text={url} iconOnly className="h-8 w-8" />
         </div>
       </CardHeader>
     </Card>
@@ -215,7 +126,7 @@ export function FavoriteList() {
   }
 
   return (
-    <div className="grid gap-3">
+    <div className="grid gap-2">
       {favorites.map((fav) => (
         <FavoriteItemWrapper key={fav.id} preset={fav} siteName={siteMap.get(fav.siteId)} />
       ))}

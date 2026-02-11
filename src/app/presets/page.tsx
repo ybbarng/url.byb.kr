@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PresetCard } from "@/features/presets/components/preset-card";
@@ -43,6 +44,17 @@ export default function PresetsPage() {
 
   const isLoading = presetsLoading || sitesLoading;
   const sitesMap = new Map(sites?.map((s) => [s.id, s]));
+
+  // 해시 기반 스크롤: 홈에서 수정 버튼으로 이동 시
+  useEffect(() => {
+    if (isLoading) return;
+    const hash = window.location.hash.slice(1);
+    if (!hash) return;
+    const el = document.getElementById(hash);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [isLoading]);
 
   const handleDelete = (id: string) => {
     if (!confirm("이 프리셋을 삭제하시겠습니까?")) return;

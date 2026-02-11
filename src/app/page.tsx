@@ -56,7 +56,10 @@ export default function HomePage() {
 
       {/* 즐겨찾기 */}
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold">즐겨찾기</h2>
+        <h2 className="flex items-center gap-2 text-xl font-semibold">
+          <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+          즐겨찾기
+        </h2>
         <FavoriteList />
       </section>
     </div>
