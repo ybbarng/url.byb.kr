@@ -15,7 +15,7 @@ interface SiteCardProps {
 export function SiteCard({ site, onDelete }: SiteCardProps) {
   return (
     <Card>
-      <CardHeader className="flex flex-row items-start justify-between gap-2">
+      <CardHeader className="flex flex-row items-center justify-between gap-2">
         <div className="space-y-1.5 min-w-0">
           <CardTitle className="text-base">{site.name}</CardTitle>
           {site.description && (
