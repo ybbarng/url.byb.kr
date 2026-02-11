@@ -1,3 +1,5 @@
+import { Github } from "lucide-react";
+
 export function Footer() {
   return (
     <footer className="border-t">
@@ -9,7 +11,7 @@ export function Footer() {
             rel="noopener noreferrer"
             className="font-medium text-foreground underline underline-offset-4 hover:text-primary"
           >
-            URL Kit
+            <Github className="inline h-3.5 w-3.5" /> URL Kit
           </a>
           {" — URL 구성요소를 관리하고 조합하는 도구"}
         </p>
