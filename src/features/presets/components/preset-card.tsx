@@ -124,45 +124,51 @@ export function PresetCard({ preset, urlItems, onToggleFavorite, onDelete }: Pre
           )}
         </div>
 
-        <div className="flex gap-1 shrink-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => onToggleFavorite(preset)}
-            aria-label={preset.isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가"}
-          >
-            <Star
-              className={cn(
-                "h-4 w-4",
-                preset.isFavorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground",
-              )}
-            />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-            <Link href={`/builder?siteId=${preset.siteId}&presetId=${preset.id}`}>
-              <Pencil className="h-4 w-4" />
-              <span className="sr-only">편집</span>
-            </Link>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => url && window.open(url, "_blank")}
-            disabled={!url}
-          >
-            <ExternalLink className="h-4 w-4" />
-          </Button>
-          <CopyButton text={url} className="h-8 px-2" />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-destructive"
-            onClick={() => onDelete(preset.id)}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+        <div className="flex flex-col gap-1 shrink-0">
+          <div className="flex gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => onToggleFavorite(preset)}
+              aria-label={preset.isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가"}
+            >
+              <Star
+                className={cn(
+                  "h-4 w-4",
+                  preset.isFavorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground",
+                )}
+              />
+            </Button>
+          </div>
+          <div className="flex gap-1">
+            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+              <Link href={`/builder?siteId=${preset.siteId}&presetId=${preset.id}`}>
+                <Pencil className="h-4 w-4" />
+                <span className="sr-only">편집</span>
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              onClick={() => onDelete(preset.id)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => url && window.open(url, "_blank")}
+              disabled={!url}
+            >
+              <ExternalLink className="h-4 w-4" />
+            </Button>
+            <CopyButton text={url} iconOnly className="h-8 w-8" />
+          </div>
         </div>
       </CardHeader>
     </Card>
