@@ -24,17 +24,19 @@ export function UrlItemCard({
   onDelete,
 }: UrlItemCardProps) {
   return (
-    <button
-      type="button"
+    <div
       className={cn(
-        "group flex w-full items-center justify-between gap-2 rounded-md border px-3 py-2 cursor-pointer transition-colors text-left",
+        "group flex w-full items-center gap-2 rounded-md border px-3 py-2 transition-colors",
         isSelected
           ? "border-primary bg-primary/10 ring-1 ring-primary"
           : "hover:border-muted-foreground/30",
       )}
-      onClick={() => onSelect(item)}
     >
-      <div className="min-w-0">
+      <button
+        type="button"
+        className="min-w-0 flex-1 cursor-pointer text-left"
+        onClick={() => onSelect(item)}
+      >
         <p className="text-sm font-medium truncate">{item.name}</p>
         <p
           className={cn(
@@ -47,31 +49,20 @@ export function UrlItemCard({
         {item.description && (
           <p className="text-xs text-muted-foreground truncate">{item.description}</p>
         )}
-      </div>
+      </button>
       <div className="flex gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7"
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit(item);
-          }}
-        >
+        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(item)}>
           <Pencil className="h-3 w-3" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
           className="h-7 w-7 text-muted-foreground hover:text-destructive"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(item);
-          }}
+          onClick={() => onDelete(item)}
         >
           <Trash2 className="h-3 w-3" />
         </Button>
       </div>
-    </button>
+    </div>
   );
 }
