@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { useCreatePreset } from "@/features/presets/hooks/use-presets";
+import { useCreatePreset, usePreset, useUpdatePreset } from "@/features/presets/hooks/use-presets";
 import { buildUrl } from "@/lib/url";
 import type { Preset } from "@/types/preset";
 import type { UrlItem, UrlItemCategory } from "@/types/url-item";
@@ -13,6 +13,7 @@ import { UrlPreview } from "./url-preview";
 
 interface BuilderFormProps {
   siteId: string;
+  presetId?: string | null;
 }
 
 interface SelectionState {
@@ -24,8 +25,11 @@ interface SelectionState {
 }
 
 /** 사이트의 구성요소를 구성하고 선택해 URL을 빌드하는 폼 */
-export function BuilderForm({ siteId }: BuilderFormProps) {
+export function BuilderForm({ siteId, presetId }: BuilderFormProps) {
   const { data: allItems } = useUrlItems(siteId);
+  const { data: existingPreset } = usePreset(presetId ?? null);
+  const isEditMode = !!presetId && !!existingPreset;
+
   const [selection, setSelection] = useState<SelectionState>({
     protocolId: null,
     subdomainId: null,
@@ -33,8 +37,24 @@ export function BuilderForm({ siteId }: BuilderFormProps) {
     pathId: null,
     queryIds: [],
   });
+  const [initialized, setInitialized] = useState(false);
   const [presetDialogOpen, setPresetDialogOpen] = useState(false);
   const createPreset = useCreatePreset();
+  const updatePresetMutation = useUpdatePreset();
+
+  // 편집 모드: 프리셋 데이터로 선택 상태 초기화
+  useEffect(() => {
+    if (existingPreset && !initialized) {
+      setSelection({
+        protocolId: existingPreset.selectedProtocolId,
+        subdomainId: existingPreset.selectedSubdomainId,
+        domainId: existingPreset.selectedDomainId,
+        pathId: existingPreset.selectedPathId,
+        queryIds: existingPreset.selectedQueryIds,
+      });
+      setInitialized(true);
+    }
+  }, [existingPreset, initialized]);
 
   // 카테고리별 아이템 분류
   const itemsByCategory = useMemo(() => {
@@ -118,27 +138,45 @@ export function BuilderForm({ siteId }: BuilderFormProps) {
       return;
     }
 
-    const now = new Date().toISOString();
-    const preset: Preset = {
-      id: crypto.randomUUID(),
-      siteId,
-      name,
-      selectedProtocolId: effectiveProtocolId,
-      selectedSubdomainId: selection.subdomainId,
-      selectedDomainId: selection.domainId,
-      selectedPathId: selection.pathId,
-      selectedQueryIds: selection.queryIds,
-      isFavorite: false,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    createPreset.mutate(preset, {
-      onSuccess: () => {
-        toast.success("프리셋이 저장되었습니다");
-        setPresetDialogOpen(false);
-      },
-    });
+    if (isEditMode) {
+      const updated: Preset = {
+        ...existingPreset,
+        name,
+        selectedProtocolId: effectiveProtocolId,
+        selectedSubdomainId: selection.subdomainId,
+        selectedDomainId: selection.domainId,
+        selectedPathId: selection.pathId,
+        selectedQueryIds: selection.queryIds,
+        updatedAt: new Date().toISOString(),
+      };
+      updatePresetMutation.mutate(updated, {
+        onSuccess: () => {
+          toast.success("프리셋이 업데이트되었습니다");
+          setPresetDialogOpen(false);
+        },
+      });
+    } else {
+      const now = new Date().toISOString();
+      const preset: Preset = {
+        id: crypto.randomUUID(),
+        siteId,
+        name,
+        selectedProtocolId: effectiveProtocolId,
+        selectedSubdomainId: selection.subdomainId,
+        selectedDomainId: selection.domainId,
+        selectedPathId: selection.pathId,
+        selectedQueryIds: selection.queryIds,
+        isFavorite: false,
+        createdAt: now,
+        updatedAt: now,
+      };
+      createPreset.mutate(preset, {
+        onSuccess: () => {
+          toast.success("프리셋이 저장되었습니다");
+          setPresetDialogOpen(false);
+        },
+      });
+    }
   };
 
   const getSelectedIds = (category: UrlItemCategory): string[] => {
@@ -175,6 +213,7 @@ export function BuilderForm({ siteId }: BuilderFormProps) {
           .map((id) => itemMap.get(id)?.value)
           .filter((v): v is string => !!v)}
         onSavePreset={() => setPresetDialogOpen(true)}
+        saveLabel={isEditMode ? "프리셋 업데이트" : "프리셋으로 저장"}
       />
 
       {/* 5 컬럼 그리드 */}
@@ -195,6 +234,7 @@ export function BuilderForm({ siteId }: BuilderFormProps) {
         open={presetDialogOpen}
         onOpenChange={setPresetDialogOpen}
         onSave={handleSavePreset}
+        defaultName={isEditMode ? existingPreset.name : ""}
       />
     </div>
   );

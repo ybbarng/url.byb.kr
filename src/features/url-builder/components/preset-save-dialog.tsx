@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -11,11 +11,22 @@ interface PresetSaveDialogProps {
   onOpenChange: (open: boolean) => void;
   onSave: (name: string) => void;
   isPending?: boolean;
+  defaultName?: string;
 }
 
 /** 프리셋 저장 다이얼로그 */
-export function PresetSaveDialog({ open, onOpenChange, onSave, isPending }: PresetSaveDialogProps) {
-  const [name, setName] = useState("");
+export function PresetSaveDialog({
+  open,
+  onOpenChange,
+  onSave,
+  isPending,
+  defaultName = "",
+}: PresetSaveDialogProps) {
+  const [name, setName] = useState(defaultName);
+
+  useEffect(() => {
+    if (open) setName(defaultName);
+  }, [open, defaultName]);
 
   const handleSave = () => {
     if (!name.trim()) return;

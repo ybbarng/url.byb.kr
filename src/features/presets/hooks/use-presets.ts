@@ -6,6 +6,8 @@ import {
   deletePreset,
   getAllPresets,
   getFavoritePresets,
+  getPresetById,
+  getPresetsBySiteId,
   updatePreset,
 } from "@/lib/db/repositories/preset-repository";
 import type { Preset } from "@/types/preset";
@@ -18,6 +20,24 @@ export function usePresets() {
   return useQuery({
     queryKey: PRESETS_KEY,
     queryFn: getAllPresets,
+  });
+}
+
+/** 사이트별 프리셋 조회 */
+export function usePresetsBySiteId(siteId: string) {
+  return useQuery({
+    queryKey: ["presets", "site", siteId],
+    queryFn: () => getPresetsBySiteId(siteId),
+    enabled: !!siteId,
+  });
+}
+
+/** 단일 프리셋 조회 */
+export function usePreset(id: string | null) {
+  return useQuery({
+    queryKey: ["presets", id],
+    queryFn: () => getPresetById(id as string),
+    enabled: !!id,
   });
 }
 
@@ -51,6 +71,18 @@ export function useToggleFavorite() {
         isFavorite: !preset.isFavorite,
         updatedAt: new Date().toISOString(),
       }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PRESETS_KEY });
+      queryClient.invalidateQueries({ queryKey: FAVORITES_KEY });
+    },
+  });
+}
+
+/** 프리셋 업데이트 */
+export function useUpdatePreset() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updatePreset,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: PRESETS_KEY });
       queryClient.invalidateQueries({ queryKey: FAVORITES_KEY });

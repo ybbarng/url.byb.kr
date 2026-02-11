@@ -10,14 +10,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { usePresetsBySiteId } from "@/features/presets/hooks/use-presets";
 import { useSites } from "@/features/sites/hooks/use-sites";
 import { BuilderForm } from "@/features/url-builder/components/builder-form";
+
+const NEW_PRESET_VALUE = "__new__";
 
 function BuilderContent() {
   const searchParams = useSearchParams();
   const initialSiteId = searchParams.get("siteId") ?? "";
+  const initialPresetId = searchParams.get("presetId") ?? "";
   const { data: sites, isLoading } = useSites();
   const [selectedSiteId, setSelectedSiteId] = useState(initialSiteId);
+  const [selectedPresetId, setSelectedPresetId] = useState(initialPresetId);
+
+  const { data: presets } = usePresetsBySiteId(selectedSiteId);
+
+  const handleSiteChange = (siteId: string) => {
+    setSelectedSiteId(siteId);
+    setSelectedPresetId("");
+  };
+
+  const handlePresetChange = (value: string) => {
+    setSelectedPresetId(value === NEW_PRESET_VALUE ? "" : value);
+  };
 
   if (isLoading) {
     return <p className="text-sm text-muted-foreground">불러오는 중...</p>;
@@ -30,31 +46,58 @@ function BuilderContent() {
         <p className="text-sm text-muted-foreground">구성요소를 추가하고 선택해 URL을 빌드합니다</p>
       </div>
 
-      {/* 사이트 선택 */}
-      <div className="space-y-2">
-        <Label>사이트</Label>
-        {sites?.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            등록된 사이트가 없습니다. 먼저 사이트를 등록해주세요.
-          </p>
-        ) : (
-          <Select value={selectedSiteId} onValueChange={setSelectedSiteId}>
-            <SelectTrigger>
-              <SelectValue placeholder="사이트 선택" />
-            </SelectTrigger>
-            <SelectContent>
-              {sites?.map((site) => (
-                <SelectItem key={site.id} value={site.id}>
-                  {site.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* 사이트 / 프리셋 선택 */}
+      <div className="flex flex-col gap-4 sm:flex-row">
+        <div className="space-y-2 flex-1">
+          <Label>사이트</Label>
+          {sites?.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              등록된 사이트가 없습니다. 먼저 사이트를 등록해주세요.
+            </p>
+          ) : (
+            <Select value={selectedSiteId} onValueChange={handleSiteChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="사이트 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                {sites?.map((site) => (
+                  <SelectItem key={site.id} value={site.id}>
+                    {site.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+
+        {selectedSiteId && (
+          <div className="space-y-2 flex-1">
+            <Label>프리셋</Label>
+            <Select value={selectedPresetId || NEW_PRESET_VALUE} onValueChange={handlePresetChange}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NEW_PRESET_VALUE}>새로 만들기</SelectItem>
+                {presets?.map((preset) => (
+                  <SelectItem key={preset.id} value={preset.id}>
+                    {preset.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         )}
       </div>
 
       {/* 빌더 폼 */}
-      {selectedSiteId && <BuilderForm key={selectedSiteId} siteId={selectedSiteId} />}
+      {selectedSiteId && (
+        <BuilderForm
+          key={`${selectedSiteId}-${selectedPresetId}`}
+          siteId={selectedSiteId}
+          presetId={selectedPresetId || null}
+        />
+      )}
     </div>
   );
 }

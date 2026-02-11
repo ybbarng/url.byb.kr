@@ -1,6 +1,7 @@
 "use client";
 
-import { ExternalLink, Star, Trash2 } from "lucide-react";
+import { ExternalLink, Pencil, Star, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useMemo } from "react";
 import { CopyButton } from "@/components/shared/copy-button";
 import { Badge } from "@/components/ui/badge";
@@ -79,6 +80,12 @@ export function PresetCard({
                 preset.isFavorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground",
               )}
             />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+            <Link href={`/builder?siteId=${preset.siteId}&presetId=${preset.id}`}>
+              <Pencil className="h-4 w-4" />
+              <span className="sr-only">편집</span>
+            </Link>
           </Button>
           <Button
             variant="ghost"

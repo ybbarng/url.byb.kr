@@ -15,6 +15,7 @@ interface UrlPreviewProps {
   pathValue: string | null;
   queryValues: string[];
   onSavePreset: () => void;
+  saveLabel?: string;
 }
 
 function Part({
@@ -60,6 +61,7 @@ export function UrlPreview({
   pathValue,
   queryValues,
   onSavePreset,
+  saveLabel = "프리셋으로 저장",
 }: UrlPreviewProps) {
   const handleOpen = () => {
     window.open(url, "_blank");
@@ -103,7 +105,7 @@ export function UrlPreview({
         </Button>
         <CopyButton text={url} />
         <Button variant="secondary" onClick={onSavePreset} disabled={!url}>
-          프리셋으로 저장
+          {saveLabel}
         </Button>
       </div>
     </div>
