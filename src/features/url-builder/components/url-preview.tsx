@@ -28,7 +28,7 @@ function Part({
   return (
     <span
       className={cn(
-        "inline-block rounded px-1 py-0.5 transition-colors",
+        "inline-block shrink-0 whitespace-nowrap rounded px-1 py-0.5 transition-colors",
         active ? "bg-primary/15 text-foreground" : "text-muted-foreground/50",
         className,
       )}
@@ -69,7 +69,7 @@ export function UrlPreview({
   return (
     <div className="space-y-3 rounded-lg border bg-muted/50 p-4">
       {/* URL 구조 시각화 */}
-      <div className="flex flex-wrap items-center gap-0 font-mono text-sm leading-relaxed">
+      <div className="flex items-center gap-0 overflow-hidden font-mono text-sm leading-relaxed">
         <Part value={protocolValue} placeholder="프로토콜" />
         <Separator active={hasProtocol}>://</Separator>
         <Part value={subdomainValue} placeholder="서브도메인" />
@@ -78,7 +78,11 @@ export function UrlPreview({
         <Separator active={hasDomain}>/</Separator>
         <Part value={pathValue} placeholder="경로" />
         <Separator active={hasQuery}>?</Separator>
-        <Part value={hasQuery ? queryString : null} placeholder="쿼리" />
+        <Part
+          value={hasQuery ? queryString : null}
+          placeholder="쿼리"
+          className="shrink truncate min-w-0"
+        />
       </div>
 
       {/* 실제 빌드된 URL */}
