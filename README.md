@@ -53,25 +53,25 @@ URL Kit은 이 구성요소들을 **명시적인 이름으로 관리**하고,
 ### 요구사항
 
 - Node.js 20+
-- npm 10+
+- pnpm 10+
 
 ### 설치 및 실행
 
 ```bash
 # 의존성 설치
-npm install
+pnpm install
 
 # 개발 서버 실행
-npm run dev
+pnpm dev
 
 # 린트
-npm run lint
+pnpm lint
 
 # 테스트
-npm run test
+pnpm test
 
 # 프로덕션 빌드
-npm run build
+pnpm build
 ```
 
 개발 서버가 실행되면 [http://localhost:3000](http://localhost:3000)에서 접속할 수 있습니다.

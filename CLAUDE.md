@@ -8,12 +8,12 @@
 ## 명령어
 
 ```bash
-npm run dev          # 개발 서버 (turbopack)
-npm run build        # 정적 빌드 (output: export)
-npm run lint         # Biome 린트 + 포맷 (자동 수정)
-npm run lint:check   # Biome 체크 (수정 없이)
-npm run test         # Vitest 테스트
-npm run test:watch   # Vitest 워치 모드
+pnpm dev          # 개발 서버 (turbopack)
+pnpm build        # 정적 빌드 (output: export)
+pnpm lint         # Biome 린트 + 포맷 (자동 수정)
+pnpm lint:check   # Biome 체크 (수정 없이)
+pnpm test         # Vitest 테스트
+pnpm test:watch   # Vitest 워치 모드
 ```
 
 ## 기술 스택
