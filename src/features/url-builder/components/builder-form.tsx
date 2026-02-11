@@ -132,51 +132,54 @@ export function BuilderForm({ siteId, presetId }: BuilderFormProps) {
     [],
   );
 
+  const handleUpdatePreset = () => {
+    if (!isEditMode || !effectiveProtocolId || !selection.domainId) {
+      toast.error("프로토콜과 도메인은 필수입니다");
+      return;
+    }
+
+    const updated: Preset = {
+      ...existingPreset,
+      selectedProtocolId: effectiveProtocolId,
+      selectedSubdomainId: selection.subdomainId,
+      selectedDomainId: selection.domainId,
+      selectedPathId: selection.pathId,
+      selectedQueryIds: selection.queryIds,
+      updatedAt: new Date().toISOString(),
+    };
+    updatePresetMutation.mutate(updated, {
+      onSuccess: () => {
+        toast.success("프리셋이 업데이트되었습니다");
+      },
+    });
+  };
+
   const handleSavePreset = (name: string) => {
     if (!effectiveProtocolId || !selection.domainId) {
       toast.error("프로토콜과 도메인은 필수입니다");
       return;
     }
 
-    if (isEditMode) {
-      const updated: Preset = {
-        ...existingPreset,
-        name,
-        selectedProtocolId: effectiveProtocolId,
-        selectedSubdomainId: selection.subdomainId,
-        selectedDomainId: selection.domainId,
-        selectedPathId: selection.pathId,
-        selectedQueryIds: selection.queryIds,
-        updatedAt: new Date().toISOString(),
-      };
-      updatePresetMutation.mutate(updated, {
-        onSuccess: () => {
-          toast.success("프리셋이 업데이트되었습니다");
-          setPresetDialogOpen(false);
-        },
-      });
-    } else {
-      const now = new Date().toISOString();
-      const preset: Preset = {
-        id: crypto.randomUUID(),
-        siteId,
-        name,
-        selectedProtocolId: effectiveProtocolId,
-        selectedSubdomainId: selection.subdomainId,
-        selectedDomainId: selection.domainId,
-        selectedPathId: selection.pathId,
-        selectedQueryIds: selection.queryIds,
-        isFavorite: false,
-        createdAt: now,
-        updatedAt: now,
-      };
-      createPreset.mutate(preset, {
-        onSuccess: () => {
-          toast.success("프리셋이 저장되었습니다");
-          setPresetDialogOpen(false);
-        },
-      });
-    }
+    const now = new Date().toISOString();
+    const preset: Preset = {
+      id: crypto.randomUUID(),
+      siteId,
+      name,
+      selectedProtocolId: effectiveProtocolId,
+      selectedSubdomainId: selection.subdomainId,
+      selectedDomainId: selection.domainId,
+      selectedPathId: selection.pathId,
+      selectedQueryIds: selection.queryIds,
+      isFavorite: false,
+      createdAt: now,
+      updatedAt: now,
+    };
+    createPreset.mutate(preset, {
+      onSuccess: () => {
+        toast.success("프리셋이 저장되었습니다");
+        setPresetDialogOpen(false);
+      },
+    });
   };
 
   const getSelectedIds = (category: UrlItemCategory): string[] => {
@@ -212,7 +215,7 @@ export function BuilderForm({ siteId, presetId }: BuilderFormProps) {
         queryValues={selection.queryIds
           .map((id) => itemMap.get(id)?.value)
           .filter((v): v is string => !!v)}
-        onSavePreset={() => setPresetDialogOpen(true)}
+        onSavePreset={isEditMode ? handleUpdatePreset : () => setPresetDialogOpen(true)}
         saveLabel={isEditMode ? "프리셋 업데이트" : "프리셋으로 저장"}
       />
 
@@ -234,7 +237,6 @@ export function BuilderForm({ siteId, presetId }: BuilderFormProps) {
         open={presetDialogOpen}
         onOpenChange={setPresetDialogOpen}
         onSave={handleSavePreset}
-        defaultName={isEditMode ? existingPreset.name : ""}
       />
     </div>
   );
