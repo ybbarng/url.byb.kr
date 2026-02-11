@@ -10,6 +10,37 @@ import {
   useToggleFavorite,
 } from "@/features/presets/hooks/use-presets";
 import { useSites } from "@/features/sites/hooks/use-sites";
+import { useUrlItems } from "@/features/url-builder/hooks/use-url-items";
+
+/** 사이트별 UrlItem을 로드하는 래퍼 */
+function PresetCardWithItems({
+  preset,
+  siteName,
+  siteId,
+  onToggleFavorite,
+  onDelete,
+}: {
+  preset: Parameters<typeof PresetCard>[0]["preset"];
+  siteName?: string;
+  siteId: string;
+  onToggleFavorite: Parameters<typeof PresetCard>[0]["onToggleFavorite"];
+  onDelete: Parameters<typeof PresetCard>[0]["onDelete"];
+}) {
+  const { data: urlItems } = useUrlItems(siteId);
+  return (
+    <PresetCard
+      preset={preset}
+      site={
+        siteName
+          ? { id: siteId, name: siteName, description: "", createdAt: "", updatedAt: "" }
+          : undefined
+      }
+      urlItems={urlItems}
+      onToggleFavorite={onToggleFavorite}
+      onDelete={onDelete}
+    />
+  );
+}
 
 export default function PresetsPage() {
   const { data: presets, isLoading: presetsLoading } = usePresets();
@@ -30,9 +61,11 @@ export default function PresetsPage() {
   // 사이트별로 프리셋을 그룹화
   const groupedPresets = presets?.reduce(
     (acc, preset) => {
-      const siteName = sitesMap.get(preset.siteId)?.name ?? "알 수 없는 사이트";
-      if (!acc[siteName]) acc[siteName] = [];
-      acc[siteName].push(preset);
+      const siteId = preset.siteId;
+      const siteName = sitesMap.get(siteId)?.name ?? "알 수 없는 사이트";
+      const key = `${siteId}::${siteName}`;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(preset);
       return acc;
     },
     {} as Record<string, typeof presets>,
@@ -55,22 +88,26 @@ export default function PresetsPage() {
           </Button>
         </div>
       ) : (
-        Object.entries(groupedPresets ?? {}).map(([siteName, sitePresets]) => (
-          <section key={siteName} className="space-y-3">
-            <h2 className="text-lg font-semibold">{siteName}</h2>
-            <div className="grid gap-3">
-              {sitePresets?.map((preset) => (
-                <PresetCard
-                  key={preset.id}
-                  preset={preset}
-                  site={sitesMap.get(preset.siteId)}
-                  onToggleFavorite={(p) => toggleFavorite.mutate(p)}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </div>
-          </section>
-        ))
+        Object.entries(groupedPresets ?? {}).map(([key, sitePresets]) => {
+          const [siteId, siteName] = key.split("::");
+          return (
+            <section key={key} className="space-y-3">
+              <h2 className="text-lg font-semibold">{siteName}</h2>
+              <div className="grid gap-3">
+                {sitePresets?.map((preset) => (
+                  <PresetCardWithItems
+                    key={preset.id}
+                    preset={preset}
+                    siteId={siteId}
+                    siteName={siteName}
+                    onToggleFavorite={(p) => toggleFavorite.mutate(p)}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </div>
+            </section>
+          );
+        })
       )}
     </div>
   );

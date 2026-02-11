@@ -7,21 +7,33 @@ import { CopyButton } from "@/components/shared/copy-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFavorites } from "@/features/presets/hooks/use-presets";
-import { useSites } from "@/features/sites/hooks/use-sites";
+import { useUrlItems } from "@/features/url-builder/hooks/use-url-items";
 import { buildUrl } from "@/lib/url";
 import type { Preset } from "@/types/preset";
-import type { Site } from "@/types/site";
+import type { UrlItem } from "@/types/url-item";
 
-function FavoriteItem({ preset, site }: { preset: Preset; site?: Site }) {
+function FavoriteItem({ preset, urlItems }: { preset: Preset; urlItems: UrlItem[] }) {
   const url = useMemo(() => {
-    if (!site) return "";
+    if (urlItems.length === 0) return "";
+
+    const itemMap = new Map(urlItems.map((item) => [item.id, item]));
+    const protocol = itemMap.get(preset.selectedProtocolId);
+    const domain = itemMap.get(preset.selectedDomainId);
+
+    if (!protocol || !domain) return "";
+
     return buildUrl({
-      site,
-      subdomain: preset.selectedSubdomainId ?? "",
-      pathValues: preset.selectedPathValues,
-      queryValues: preset.selectedQueryValues,
+      protocol,
+      subdomain: preset.selectedSubdomainId
+        ? (itemMap.get(preset.selectedSubdomainId) ?? null)
+        : null,
+      domain,
+      path: preset.selectedPathId ? (itemMap.get(preset.selectedPathId) ?? null) : null,
+      queries: preset.selectedQueryIds
+        .map((id) => itemMap.get(id))
+        .filter((item): item is UrlItem => !!item),
     });
-  }, [site, preset]);
+  }, [urlItems, preset]);
 
   return (
     <Card className="group">
@@ -50,13 +62,15 @@ function FavoriteItem({ preset, site }: { preset: Preset; site?: Site }) {
   );
 }
 
+/** 개별 즐겨찾기 아이템에서 해당 사이트의 UrlItem을 로드 */
+function FavoriteItemWrapper({ preset }: { preset: Preset }) {
+  const { data: urlItems } = useUrlItems(preset.siteId);
+  return <FavoriteItem preset={preset} urlItems={urlItems ?? []} />;
+}
+
 /** 홈 화면에 표시되는 즐겨찾기 목록 */
 export function FavoriteList() {
-  const { data: favorites, isLoading: favLoading } = useFavorites();
-  const { data: sites, isLoading: sitesLoading } = useSites();
-
-  const isLoading = favLoading || sitesLoading;
-  const sitesMap = new Map(sites?.map((s) => [s.id, s]));
+  const { data: favorites, isLoading } = useFavorites();
 
   if (isLoading) {
     return <p className="text-sm text-muted-foreground">불러오는 중...</p>;
@@ -76,7 +90,7 @@ export function FavoriteList() {
   return (
     <div className="grid gap-2">
       {favorites.map((fav) => (
-        <FavoriteItem key={fav.id} preset={fav} site={sitesMap.get(fav.siteId)} />
+        <FavoriteItemWrapper key={fav.id} preset={fav} />
       ))}
     </div>
   );

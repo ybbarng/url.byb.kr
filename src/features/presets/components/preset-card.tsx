@@ -10,25 +10,45 @@ import { buildUrl } from "@/lib/url";
 import { cn } from "@/lib/utils";
 import type { Preset } from "@/types/preset";
 import type { Site } from "@/types/site";
+import type { UrlItem } from "@/types/url-item";
 
 interface PresetCardProps {
   preset: Preset;
   site?: Site;
+  urlItems?: UrlItem[];
   onToggleFavorite: (preset: Preset) => void;
   onDelete: (id: string) => void;
 }
 
 /** 프리셋 카드: URL 미리보기, 열기, 복사, 즐겨찾기 토글, 삭제 */
-export function PresetCard({ preset, site, onToggleFavorite, onDelete }: PresetCardProps) {
+export function PresetCard({
+  preset,
+  site,
+  urlItems,
+  onToggleFavorite,
+  onDelete,
+}: PresetCardProps) {
   const url = useMemo(() => {
-    if (!site) return "";
+    if (!urlItems || urlItems.length === 0) return "";
+
+    const itemMap = new Map(urlItems.map((item) => [item.id, item]));
+    const protocol = itemMap.get(preset.selectedProtocolId);
+    const domain = itemMap.get(preset.selectedDomainId);
+
+    if (!protocol || !domain) return "";
+
     return buildUrl({
-      site,
-      subdomain: preset.selectedSubdomainId ?? "",
-      pathValues: preset.selectedPathValues,
-      queryValues: preset.selectedQueryValues,
+      protocol,
+      subdomain: preset.selectedSubdomainId
+        ? (itemMap.get(preset.selectedSubdomainId) ?? null)
+        : null,
+      domain,
+      path: preset.selectedPathId ? (itemMap.get(preset.selectedPathId) ?? null) : null,
+      queries: preset.selectedQueryIds
+        .map((id) => itemMap.get(id))
+        .filter((item): item is UrlItem => !!item),
     });
-  }, [site, preset]);
+  }, [urlItems, preset]);
 
   return (
     <Card>
