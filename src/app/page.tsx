@@ -52,7 +52,7 @@ export default function HomePage() {
         /* 온보딩 */
         <section>
           <Card className="flex flex-col items-center gap-4 p-8 text-center">
-            <CardHeader className="items-center p-0">
+            <CardHeader className="w-full items-center p-0">
               <CardTitle className="text-xl">
                 환영합니다! 첫 사이트를 추가해 보세요
               </CardTitle>
