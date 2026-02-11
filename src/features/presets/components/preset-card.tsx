@@ -10,7 +10,6 @@ import { CATEGORY_COLORS } from "@/features/url-builder/category-colors";
 import { buildUrl } from "@/lib/url";
 import { cn } from "@/lib/utils";
 import type { Preset } from "@/types/preset";
-import type { Site } from "@/types/site";
 import type { UrlItem, UrlItemCategory } from "@/types/url-item";
 
 interface UrlSegment {
@@ -21,20 +20,13 @@ interface UrlSegment {
 
 interface PresetCardProps {
   preset: Preset;
-  site?: Site;
   urlItems?: UrlItem[];
   onToggleFavorite: (preset: Preset) => void;
   onDelete: (id: string) => void;
 }
 
 /** 프리셋 카드: URL 미리보기, 열기, 복사, 즐겨찾기 토글, 삭제 */
-export function PresetCard({
-  preset,
-  site,
-  urlItems,
-  onToggleFavorite,
-  onDelete,
-}: PresetCardProps) {
+export function PresetCard({ preset, urlItems, onToggleFavorite, onDelete }: PresetCardProps) {
   const { url, nameSegments, valueSegments } = useMemo(() => {
     const empty = { url: "", nameSegments: [] as UrlSegment[], valueSegments: [] as UrlSegment[] };
     if (!urlItems || urlItems.length === 0) return empty;
@@ -99,9 +91,7 @@ export function PresetCard({
     <Card>
       <CardHeader className="flex flex-row items-start justify-between gap-2">
         <div className="space-y-1.5 min-w-0">
-          <CardTitle className="text-base">
-            {site ? `${site.name} ${preset.name}` : preset.name}
-          </CardTitle>
+          <CardTitle className="text-base">{preset.name}</CardTitle>
           {nameSegments.length > 0 && (
             <p className="text-sm truncate">
               {nameSegments.map((seg) => (

@@ -15,13 +15,11 @@ import { useUrlItems } from "@/features/url-builder/hooks/use-url-items";
 /** 사이트별 UrlItem을 로드하는 래퍼 */
 function PresetCardWithItems({
   preset,
-  siteName,
   siteId,
   onToggleFavorite,
   onDelete,
 }: {
   preset: Parameters<typeof PresetCard>[0]["preset"];
-  siteName?: string;
   siteId: string;
   onToggleFavorite: Parameters<typeof PresetCard>[0]["onToggleFavorite"];
   onDelete: Parameters<typeof PresetCard>[0]["onDelete"];
@@ -30,11 +28,6 @@ function PresetCardWithItems({
   return (
     <PresetCard
       preset={preset}
-      site={
-        siteName
-          ? { id: siteId, name: siteName, description: "", createdAt: "", updatedAt: "" }
-          : undefined
-      }
       urlItems={urlItems}
       onToggleFavorite={onToggleFavorite}
       onDelete={onDelete}
@@ -99,7 +92,6 @@ export default function PresetsPage() {
                     key={preset.id}
                     preset={preset}
                     siteId={siteId}
-                    siteName={siteName}
                     onToggleFavorite={(p) => toggleFavorite.mutate(p)}
                     onDelete={handleDelete}
                   />
