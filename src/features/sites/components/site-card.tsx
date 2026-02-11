@@ -23,10 +23,11 @@ export function SiteCard({ site, onDelete }: SiteCardProps) {
           )}
         </div>
 
-        <div className="flex gap-1 shrink-0">
-          <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+        <div className="flex items-center gap-1 shrink-0">
+          <Button asChild size="sm">
             <Link href={`/builder?siteId=${site.id}`}>
               <ExternalLink className="h-4 w-4" />
+              URL 빌더 열기
             </Link>
           </Button>
           <Button asChild variant="ghost" size="icon" className="h-8 w-8">
