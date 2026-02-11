@@ -33,23 +33,23 @@ const CATEGORY_DESCRIPTIONS: Record<
 > = {
   protocol: {
     description: "웹 주소 맨 앞에 붙는 통신 방식입니다. 보통 https(보안)나 http를 사용합니다.",
-    urlParts: { before: "", highlight: "https://", after: "blog.example.com/posts?lang=ko" },
+    urlParts: { before: "", highlight: "https", after: "://blog.example.com/posts/123?lang=ko" },
   },
   subdomain: {
     description: "도메인 앞에 붙는 이름으로, 같은 사이트 안에서 영역을 나눌 때 사용합니다.",
-    urlParts: { before: "https://", highlight: "blog", after: ".example.com/posts?lang=ko" },
+    urlParts: { before: "https://", highlight: "blog", after: ".example.com/posts/123?lang=ko" },
   },
   domain: {
     description: "웹사이트의 고유 주소입니다. 사이트를 찾아가기 위한 핵심 부분입니다.",
-    urlParts: { before: "https://blog.", highlight: "example.com", after: "/posts?lang=ko" },
+    urlParts: { before: "https://blog.", highlight: "example.com", after: "/posts/123?lang=ko" },
   },
   path: {
     description: "도메인 뒤에 오는 경로로, 사이트 안에서 특정 페이지 위치를 나타냅니다.",
-    urlParts: { before: "https://blog.example.com/", highlight: "posts", after: "?lang=ko" },
+    urlParts: { before: "https://blog.example.com/", highlight: "posts/123", after: "?lang=ko" },
   },
   query: {
     description: "주소 끝에 ? 뒤로 붙는 추가 정보입니다. 검색어, 필터 등 옵션을 전달합니다.",
-    urlParts: { before: "https://blog.example.com/posts?", highlight: "lang=ko", after: "" },
+    urlParts: { before: "https://blog.example.com/posts/123?", highlight: "lang=ko", after: "" },
   },
 };
 
