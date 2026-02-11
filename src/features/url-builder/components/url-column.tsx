@@ -107,7 +107,10 @@ export function UrlColumn({ siteId, category, selectedIds, onSelect }: UrlColumn
           <button
             type="button"
             onClick={handleAdd}
-            className="rounded-md border border-dashed p-2 text-xs text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors"
+            className={cn(
+              "rounded-md border border-dashed p-2 text-xs text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors",
+              category === "domain" && (!items || items.length === 0) && "animate-pulse border-primary/50 text-foreground",
+            )}
           >
             항목 추가
           </button>
