@@ -1,6 +1,6 @@
 "use client";
 
-import { Link2, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -24,7 +24,20 @@ export function Header() {
       <div className="flex h-14 items-center px-6">
         {/* 로고 */}
         <Link href="/" className="mr-6 flex items-center gap-2 font-bold">
-          <Link2 className="h-5 w-5" />
+          <svg viewBox="0 0 32 32" className="h-5 w-5" aria-hidden="true">
+            <defs>
+              <clipPath id="logo-bar">
+                <rect x="2" y="10" width="28" height="12" rx="3" />
+              </clipPath>
+            </defs>
+            <g clipPath="url(#logo-bar)">
+              <rect x="2" y="10" width="5" height="12" fill="#dc2626" />
+              <rect x="8" y="10" width="4" height="12" fill="#ea580c" />
+              <rect x="13" y="10" width="6" height="12" fill="#d97706" />
+              <rect x="20" y="10" width="5" height="12" fill="#059669" />
+              <rect x="26" y="10" width="4" height="12" fill="#2563eb" />
+            </g>
+          </svg>
           <span>URL Kit</span>
         </Link>
 
