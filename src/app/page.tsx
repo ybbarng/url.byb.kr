@@ -51,7 +51,7 @@ export default function HomePage() {
       {!isLoading && !hasSites ? (
         /* 온보딩 */
         <section>
-          <Card className="flex flex-col items-center gap-4 p-8 text-center">
+          <Card className="flex flex-col items-center gap-6 px-8 py-16 text-center">
             <CardHeader className="w-full items-center p-0">
               <CardTitle className="text-xl">
                 환영합니다! 첫 사이트를 추가해 보세요
