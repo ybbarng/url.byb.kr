@@ -6,12 +6,19 @@ import { useMemo } from "react";
 import { CopyButton } from "@/components/shared/copy-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { CATEGORY_COLORS } from "@/features/url-builder/category-colors";
 import { buildUrl } from "@/lib/url";
 import { cn } from "@/lib/utils";
 import type { Preset } from "@/types/preset";
 import type { Site } from "@/types/site";
-import type { UrlItem } from "@/types/url-item";
+import type { UrlItem, UrlItemCategory } from "@/types/url-item";
+
+interface UrlSegment {
+  text: string;
+  category?: UrlItemCategory;
+  key: string;
+}
 
 interface PresetCardProps {
   preset: Preset;
@@ -29,8 +36,9 @@ export function PresetCard({
   onToggleFavorite,
   onDelete,
 }: PresetCardProps) {
-  const { url, nameUrl } = useMemo(() => {
-    if (!urlItems || urlItems.length === 0) return { url: "", nameUrl: "" };
+  const { url, nameSegments, valueSegments } = useMemo(() => {
+    const empty = { url: "", nameSegments: [] as UrlSegment[], valueSegments: [] as UrlSegment[] };
+    if (!urlItems || urlItems.length === 0) return empty;
 
     const itemMap = new Map(urlItems.map((item) => [item.id, item]));
     const protocol = itemMap.get(preset.selectedProtocolId);
@@ -43,17 +51,49 @@ export function PresetCard({
       .map((id) => itemMap.get(id))
       .filter((item): item is UrlItem => !!item);
 
-    if (!protocol || !domain) return { url: "", nameUrl: "" };
+    if (!protocol || !domain) return empty;
 
     const builtUrl = buildUrl({ protocol, subdomain, domain, path, queries });
 
-    let name = `${protocol.name}://`;
-    if (subdomain) name += `${subdomain.name}.`;
-    name += domain.name;
-    if (path) name += `/${path.name}`;
-    if (queries.length > 0) name += `?${queries.map((q) => q.name).join("&")}`;
+    const names: UrlSegment[] = [];
+    const values: UrlSegment[] = [];
 
-    return { url: builtUrl, nameUrl: name };
+    names.push({ text: protocol.name, category: "protocol", key: "protocol" });
+    values.push({ text: protocol.value, category: "protocol", key: "protocol" });
+    names.push({ text: "://", key: "sep-protocol" });
+    values.push({ text: "://", key: "sep-protocol" });
+
+    if (subdomain) {
+      names.push({ text: subdomain.name, category: "subdomain", key: "subdomain" });
+      values.push({ text: subdomain.value, category: "subdomain", key: "subdomain" });
+      names.push({ text: ".", key: "sep-subdomain" });
+      values.push({ text: ".", key: "sep-subdomain" });
+    }
+
+    names.push({ text: domain.name, category: "domain", key: "domain" });
+    values.push({ text: domain.value, category: "domain", key: "domain" });
+
+    if (path) {
+      names.push({ text: "/", key: "sep-path" });
+      values.push({ text: "/", key: "sep-path" });
+      names.push({ text: path.name, category: "path", key: "path" });
+      values.push({ text: path.value, category: "path", key: "path" });
+    }
+
+    if (queries.length > 0) {
+      names.push({ text: "?", key: "sep-query" });
+      values.push({ text: "?", key: "sep-query" });
+      queries.forEach((q, i) => {
+        if (i > 0) {
+          names.push({ text: "&", key: `sep-query-${q.id}` });
+          values.push({ text: "&", key: `sep-query-${q.id}` });
+        }
+        names.push({ text: q.name, category: "query", key: `query-${q.id}` });
+        values.push({ text: q.value, category: "query", key: `query-${q.id}` });
+      });
+    }
+
+    return { url: builtUrl, nameSegments: names, valueSegments: values };
   }, [urlItems, preset]);
 
   return (
@@ -68,8 +108,36 @@ export function PresetCard({
               </Badge>
             )}
           </div>
-          {nameUrl && <p className="text-sm text-foreground/70 truncate">{nameUrl}</p>}
-          <CardDescription className="font-mono text-xs truncate">{url}</CardDescription>
+          {nameSegments.length > 0 && (
+            <p className="text-sm truncate">
+              {nameSegments.map((seg) => (
+                <span
+                  key={seg.key}
+                  className={
+                    seg.category ? CATEGORY_COLORS[seg.category].activeText : "text-foreground/50"
+                  }
+                >
+                  {seg.text}
+                </span>
+              ))}
+            </p>
+          )}
+          {valueSegments.length > 0 && (
+            <p className="font-mono text-xs truncate">
+              {valueSegments.map((seg) => (
+                <span
+                  key={seg.key}
+                  className={
+                    seg.category
+                      ? CATEGORY_COLORS[seg.category].activeText
+                      : "text-muted-foreground"
+                  }
+                >
+                  {seg.text}
+                </span>
+              ))}
+            </p>
+          )}
         </div>
 
         <div className="flex gap-1 shrink-0">
