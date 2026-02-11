@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { DataMenu } from "./data-menu";
 import { ThemeToggle } from "./theme-toggle";
 
 const navItems = [
@@ -60,6 +61,7 @@ export function Header() {
         </nav>
 
         <div className="ml-auto flex items-center gap-1">
+          <DataMenu />
           <ThemeToggle />
 
           {/* 모바일 메뉴 토글 */}

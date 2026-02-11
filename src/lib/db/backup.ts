@@ -3,7 +3,7 @@ import type { UrlKitDB } from "./schema";
 
 const BACKUP_KEY = "url-kit-migration-backup";
 
-interface BackupData {
+export interface BackupData {
   timestamp: string;
   stores: Record<string, unknown[]>;
 }
@@ -61,4 +61,35 @@ export function loadBackupFromLocalStorage(): BackupData | null {
 /** localStorage 백업 삭제 */
 export function clearBackupFromLocalStorage(): void {
   localStorage.removeItem(BACKUP_KEY);
+}
+
+/** BackupData를 JSON 파일로 다운로드 */
+export function downloadAsJsonFile(data: BackupData): void {
+  const date = new Date().toISOString().slice(0, 10);
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `url-kit-backup-${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/** File 객체에서 BackupData 파싱 + 기본 검증 */
+export async function readBackupFile(file: File): Promise<BackupData> {
+  const text = await file.text();
+  const data: unknown = JSON.parse(text);
+
+  if (typeof data !== "object" || data === null || !("timestamp" in data) || !("stores" in data)) {
+    throw new Error("유효하지 않은 백업 파일입니다.");
+  }
+
+  const backup = data as BackupData;
+
+  if (typeof backup.timestamp !== "string" || typeof backup.stores !== "object") {
+    throw new Error("백업 파일 형식이 올바르지 않습니다.");
+  }
+
+  return backup;
 }
