@@ -100,11 +100,11 @@ export function UrlPreview({
 
       {/* 액션 버튼 */}
       <div className="flex flex-wrap items-center gap-2">
-        <Button variant="secondary" onClick={onSavePreset} disabled={!url}>
+        <Button onClick={onSavePreset} disabled={!url}>
           {saveLabel}
         </Button>
         <div className="ml-auto flex flex-wrap gap-2">
-          <Button onClick={handleOpen} disabled={!url} className="gap-1">
+          <Button variant="outline" onClick={handleOpen} disabled={!url} className="gap-1">
             <ExternalLink className="h-4 w-4" />새 탭에서 열기
           </Button>
           <CopyButton text={url} />
