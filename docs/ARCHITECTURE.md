@@ -81,19 +81,25 @@ src/
 ├── features/                     # 기능별 모듈
 │   ├── sites/                    # 사이트 관리
 │   │   ├── components/
-│   │   │   ├── site-form.tsx     # 사이트 생성/수정 폼
-│   │   │   ├── site-card.tsx     # 사이트 목록 카드
-│   │   │   ├── option-list-editor.tsx  # 옵션 목록 편집기
-│   │   │   ├── path-segment-editor.tsx # 경로 세그먼트 편집기
-│   │   │   └── query-param-editor.tsx  # 쿼리 파라미터 편집기
+│   │   │   ├── site-form.tsx     # 사이트 생성/수정 폼 (이름 + 설명)
+│   │   │   └── site-card.tsx     # 사이트 목록 카드
 │   │   ├── hooks/
 │   │   │   └── use-sites.ts      # 사이트 CRUD TanStack Query 훅
 │   │   └── schemas/
 │   │       └── site-schema.ts    # Zod 스키마 (폼 검증)
 │   │
 │   ├── url-builder/              # URL 빌더
-│   │   └── components/
-│   │       └── builder-form.tsx  # 사이트 선택 + 구성요소 조합 + 미리보기
+│   │   ├── components/
+│   │   │   ├── builder-form.tsx  # 5컬럼 빌더 + URL 미리보기
+│   │   │   ├── url-column.tsx    # 카테고리별 세로 컬럼
+│   │   │   ├── url-item-card.tsx # 컬럼 내 개별 항목
+│   │   │   ├── item-form-dialog.tsx  # 항목 추가/수정 다이얼로그
+│   │   │   ├── url-preview.tsx   # URL 미리보기 + 열기/복사
+│   │   │   └── preset-save-dialog.tsx # 프리셋 저장 다이얼로그
+│   │   ├── hooks/
+│   │   │   └── use-url-items.ts  # UrlItem CRUD TanStack Query 훅
+│   │   └── schemas/
+│   │       └── url-item-schema.ts # UrlItem 폼 Zod 스키마
 │   │
 │   ├── presets/                   # 프리셋
 │   │   ├── components/
@@ -107,10 +113,11 @@ src/
 │
 ├── lib/                          # 라이브러리 및 유틸리티
 │   ├── db/                       # IndexedDB 관련
-│   │   ├── client.ts             # DB 연결 싱글턴 및 초기화
-│   │   ├── schema.ts             # DB 스키마 정의
+│   │   ├── client.ts             # DB 연결 싱글턴 및 초기화 (v2 마이그레이션 포함)
+│   │   ├── schema.ts             # DB 스키마 정의 (sites, url-items, presets)
 │   │   └── repositories/         # 데이터 접근 계층
 │   │       ├── site-repository.ts
+│   │       ├── url-item-repository.ts
 │   │       └── preset-repository.ts
 │   ├── url.ts                    # URL 빌드 유틸리티 (buildUrl)
 │   ├── utils.ts                  # clsx + tailwind-merge 래퍼 (cn)
@@ -123,8 +130,9 @@ src/
 │   └── setup.ts
 │
 └── types/                        # 공통 타입 정의
-    ├── site.ts                   # Site, Option, PathSegment, QueryParamTemplate
-    └── preset.ts                 # Preset 타입
+    ├── site.ts                   # Site 타입 (이름 + 설명)
+    ├── url-item.ts               # UrlItem 타입 (카테고리별 URL 구성요소)
+    └── preset.ts                 # Preset 타입 (UrlItem ID 참조)
 ```
 
 ---
@@ -158,24 +166,33 @@ src/
 
 ```typescript
 // DB 이름: "url-kit-db"
-// 버전: 1
+// 버전: 2 (v1→v2: 기존 stores 삭제 후 재생성)
 
 interface UrlKitDB {
   sites: {
     key: string;        // site.id (UUID)
-    value: Site;
+    value: Site;        // { id, name, description, createdAt, updatedAt }
     indexes: {
       "by-name": string;
-      "by-updated": Date;
+      "by-updated": string;
+    };
+  };
+  "url-items": {
+    key: string;        // urlItem.id (UUID)
+    value: UrlItem;     // { id, siteId, category, name, description, value, sortOrder, ... }
+    indexes: {
+      "by-site": string;
+      "by-site-category": [string, string]; // [siteId, category] 복합 인덱스
+      "by-updated": string;
     };
   };
   presets: {
     key: string;        // preset.id (UUID)
-    value: Preset;
+    value: Preset;      // { id, siteId, name, selectedProtocolId, selectedDomainId, ... }
     indexes: {
       "by-site": string;
-      "by-favorite": string; // isFavorite로 필터링
-      "by-updated": Date;
+      "by-favorite": string;
+      "by-updated": string;
     };
   };
 }

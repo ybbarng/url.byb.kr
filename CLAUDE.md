@@ -44,22 +44,27 @@ src/
 │   └── shared/           # CopyButton 등 공유 컴포넌트
 ├── features/             # 기능별 모듈
 │   ├── sites/            # components/, hooks/, schemas/
-│   ├── url-builder/      # components/
+│   ├── url-builder/      # components/, hooks/, schemas/
 │   ├── presets/           # components/, hooks/
 │   └── favorites/        # components/
 ├── lib/
 │   ├── db/               # IndexedDB client, schema, repositories/
 │   ├── providers/        # ThemeProvider, QueryProvider
 │   └── utils.ts          # cn() 유틸리티
-├── types/                # Site, Preset 타입 정의
+├── types/                # Site, Preset, UrlItem 타입 정의
 └── test/                 # 테스트 setup
 ```
 
 ## 핵심 데이터 모델
 
-- **Site**: 사이트 이름, protocol, domain, subdomains[], pathSegments[], queryParams[]
-- **Preset**: siteId 참조, 선택된 서브도메인/경로/쿼리 값, isFavorite
+- **Site**: `{ id, name, description, createdAt, updatedAt }` — 사이트 기본 정보만
+- **UrlItem**: `{ id, siteId, category, name, description, value, sortOrder, createdAt, updatedAt }` — 별도 `url-items` IndexedDB store에 저장
+  - `category`: `"protocol" | "subdomain" | "domain" | "path" | "query"`
+  - 복합 인덱스 `[siteId, category]`로 효율적 조회
+  - 사이트 생성 시 기본 프로토콜(HTTPS, HTTP) 자동 생성
+- **Preset**: `{ id, siteId, name, selectedProtocolId, selectedSubdomainId, selectedDomainId, selectedPathId, selectedQueryIds[], isFavorite, createdAt, updatedAt }` — UrlItem ID 참조
 - 모든 ID는 `crypto.randomUUID()`, 날짜는 ISO 문자열
+- DB_VERSION=2, v1→v2 마이그레이션 시 기존 stores 삭제 후 재생성
 
 ## Git
 

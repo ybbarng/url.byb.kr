@@ -267,42 +267,35 @@ URL 템플릿의 최상위 단위입니다. 사용자가 직접 이름을 부여
 Site
 ├── id: string (UUID)
 ├── name: string
-├── protocol: "http" | "https"
-├── domain: string
-├── subdomains: SubdomainOption[]
-│   ├── id: string
-│   ├── label: string (표시 이름)
-│   └── value: string (실제 서브도메인)
-├── pathSegments: PathSegment[]
-│   ├── id: string
-│   ├── type: "static" | "dynamic"
-│   ├── label: string (표시 이름)
-│   ├── value?: string (정적일 때 고정 값)
-│   └── options?: SegmentOption[] (동적일 때)
-│       ├── id: string
-│       ├── label: string
-│       └── value: string
-├── queryParams: QueryParamTemplate[]
-│   ├── id: string
-│   ├── key: string (파라미터 키)
-│   ├── label: string (표시 이름)
-│   └── options?: ParamOption[]
-│       ├── id: string
-│       ├── label: string
-│       └── value: string
-├── createdAt: Date
-└── updatedAt: Date
+├── description: string
+├── createdAt: string (ISO)
+└── updatedAt: string (ISO)
+
+UrlItem (별도 IndexedDB store: "url-items")
+├── id: string (UUID)
+├── siteId: string (Site 참조)
+├── category: "protocol" | "subdomain" | "domain" | "path" | "query"
+├── name: string (표시 이름)
+├── description: string
+├── value: string (URL에 사용되는 실제 값)
+├── sortOrder: number
+├── createdAt: string (ISO)
+└── updatedAt: string (ISO)
+※ 인덱스: by-site, by-site-category ([siteId, category]), by-updated
+※ 사이트 생성 시 기본 프로토콜(HTTPS, HTTP) 자동 생성
 
 Preset
 ├── id: string (UUID)
 ├── siteId: string (Site 참조)
 ├── name: string
-├── selectedSubdomainId: string | null
-├── selectedPathValues: Record<segmentId, optionId | string>
-├── selectedQueryValues: Record<paramId, optionId | string>
+├── selectedProtocolId: string (UrlItem ID)
+├── selectedSubdomainId: string | null (UrlItem ID)
+├── selectedDomainId: string (UrlItem ID)
+├── selectedPathId: string | null (UrlItem ID)
+├── selectedQueryIds: string[] (UrlItem ID 배열)
 ├── isFavorite: boolean
-├── createdAt: Date
-└── updatedAt: Date
+├── createdAt: string (ISO)
+└── updatedAt: string (ISO)
 ```
 
 ---

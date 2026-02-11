@@ -8,13 +8,13 @@ const features = [
     href: "/sites",
     icon: Layers,
     title: "사이트 관리",
-    description: "URL 템플릿을 이름 기반으로 생성하고 관리합니다",
+    description: "사이트를 생성하고 관리합니다",
   },
   {
     href: "/builder",
     icon: Link2,
     title: "URL 빌더",
-    description: "구성요소를 선택해 URL을 빌드하고 열거나 복사합니다",
+    description: "구성요소를 추가하고 선택해 URL을 빌드합니다",
   },
   {
     href: "/presets",
@@ -31,7 +31,8 @@ export default function HomePage() {
       <section className="space-y-3 pt-4">
         <h1 className="text-3xl font-bold tracking-tight">URL Kit</h1>
         <p className="text-lg text-muted-foreground">
-          URL 구성요소를 관리하고 조합하는 도구. 서브도메인, 경로, 쿼리를 이름 기반으로 관리하세요.
+          URL 구성요소를 관리하고 조합하는 도구. 프로토콜, 서브도메인, 도메인, 경로, 쿼리를 자유롭게
+          구성하세요.
         </p>
       </section>
 
