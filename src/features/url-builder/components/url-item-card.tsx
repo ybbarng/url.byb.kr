@@ -13,6 +13,8 @@ interface UrlItemCardProps {
   onSelect: (item: UrlItem) => void;
   onEdit: (item: UrlItem) => void;
   onDelete: (item: UrlItem) => void;
+  /** false이면 삭제 버튼을 숨긴다 */
+  deletable?: boolean;
 }
 
 /** 컬럼 내 개별 항목 카드: 선택 하이라이트, 편집/삭제 */
@@ -23,6 +25,7 @@ export function UrlItemCard({
   onSelect,
   onEdit,
   onDelete,
+  deletable = true,
 }: UrlItemCardProps) {
   return (
     <div
@@ -55,14 +58,16 @@ export function UrlItemCard({
         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(item)}>
           <Pencil className="h-3 w-3" />
         </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 text-muted-foreground hover:text-destructive"
-          onClick={() => onDelete(item)}
-        >
-          <Trash2 className="h-3 w-3" />
-        </Button>
+        {deletable && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-muted-foreground hover:text-destructive"
+            onClick={() => onDelete(item)}
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        )}
       </div>
     </div>
   );

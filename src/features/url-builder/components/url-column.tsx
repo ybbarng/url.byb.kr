@@ -15,6 +15,12 @@ import type { UrlItemFormValues } from "../schemas/url-item-schema";
 import { ItemFormDialog } from "./item-form-dialog";
 import { UrlItemCard } from "./url-item-card";
 
+const DEFAULT_PROTOCOL_VALUES = new Set(["https", "http"]);
+
+function isDefaultProtocol(category: UrlItemCategory, value: string): boolean {
+  return category === "protocol" && DEFAULT_PROTOCOL_VALUES.has(value);
+}
+
 const CATEGORY_LABELS: Record<UrlItemCategory, string> = {
   protocol: "프로토콜",
   subdomain: "서브도메인",
@@ -145,6 +151,7 @@ export function UrlColumn({ siteId, category, selectedIds, onSelect, highlight }
               onSelect={onSelect}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              deletable={!isDefaultProtocol(category, item.value)}
             />
           ))}
         </div>
