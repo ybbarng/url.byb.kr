@@ -3,12 +3,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useCreatePreset, usePreset, useUpdatePreset } from "@/features/presets/hooks/use-presets";
+import type { ParsedUrl } from "@/lib/parse-url";
 import { buildUrl } from "@/lib/url";
 import type { Preset } from "@/types/preset";
 import type { UrlItem, UrlItemCategory } from "@/types/url-item";
-import { useUrlItems } from "../hooks/use-url-items";
+import { useCreateUrlItem, useUrlItems } from "../hooks/use-url-items";
 import { PresetSaveDialog } from "./preset-save-dialog";
 import { UrlColumn } from "./url-column";
+import { UrlParseInput } from "./url-parse-input";
 import { UrlPreview } from "./url-preview";
 
 interface BuilderFormProps {
@@ -41,6 +43,7 @@ export function BuilderForm({ siteId, presetId }: BuilderFormProps) {
   const [presetDialogOpen, setPresetDialogOpen] = useState(false);
   const createPreset = useCreatePreset();
   const updatePresetMutation = useUpdatePreset();
+  const createUrlItem = useCreateUrlItem();
 
   // 편집 모드: 프리셋 데이터로 선택 상태 초기화
   useEffect(() => {
@@ -205,6 +208,42 @@ export function BuilderForm({ siteId, presetId }: BuilderFormProps) {
     return hasDomain && (category === "subdomain" || category === "path" || category === "query");
   };
 
+  const handleParse = useCallback(
+    (parsed: ParsedUrl) => {
+      const now = new Date().toISOString();
+      const items = allItems ?? [];
+
+      const entries: { category: UrlItemCategory; value: string }[] = [
+        { category: "protocol", value: parsed.protocol },
+        ...(parsed.subdomain ? [{ category: "subdomain" as const, value: parsed.subdomain }] : []),
+        { category: "domain", value: parsed.domain },
+        ...(parsed.path ? [{ category: "path" as const, value: parsed.path }] : []),
+        ...(parsed.query ? [{ category: "query" as const, value: parsed.query }] : []),
+      ];
+
+      for (const entry of entries) {
+        const exists = items.some(
+          (item) => item.category === entry.category && item.value === entry.value,
+        );
+        if (exists) continue;
+
+        const categoryItems = items.filter((item) => item.category === entry.category);
+        createUrlItem.mutate({
+          id: crypto.randomUUID(),
+          siteId,
+          category: entry.category,
+          name: entry.value,
+          description: "",
+          value: entry.value,
+          sortOrder: categoryItems.length,
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+    },
+    [allItems, siteId, createUrlItem],
+  );
+
   return (
     <div className="space-y-6">
       {/* URL 미리보기 */}
@@ -224,6 +263,9 @@ export function BuilderForm({ siteId, presetId }: BuilderFormProps) {
         onSavePreset={isEditMode ? handleUpdatePreset : () => setPresetDialogOpen(true)}
         saveLabel={isEditMode ? "프리셋 업데이트" : "프리셋으로 저장"}
       />
+
+      {/* URL 파싱 입력 */}
+      <UrlParseInput onParse={handleParse} />
 
       {/* 5 컬럼 그리드 */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">

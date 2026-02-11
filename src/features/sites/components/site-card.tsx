@@ -4,12 +4,7 @@ import { ExternalLink, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useUrlItems } from "@/features/url-builder/hooks/use-url-items";
 import type { Site } from "@/types/site";
 
@@ -21,8 +16,7 @@ interface SiteCardProps {
 /** 사이트 목록에서 표시되는 카드 */
 export function SiteCard({ site, onDelete }: SiteCardProps) {
   const { data: urlItems } = useUrlItems(site.id);
-  const hasNonProtocolItems =
-    urlItems && urlItems.some((item) => item.category !== "protocol");
+  const hasNonProtocolItems = urlItems && urlItems.some((item) => item.category !== "protocol");
 
   return (
     <Card>

@@ -3,12 +3,7 @@
 import { ArrowRight, Layers, Link2, Plus, Star } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FavoriteList } from "@/features/favorites/components/favorite-list";
 import { usePresets } from "@/features/presets/hooks/use-presets";
 import { useSites } from "@/features/sites/hooks/use-sites";
@@ -46,8 +41,8 @@ export default function HomePage() {
       <section className="space-y-3 pt-4">
         <h1 className="text-3xl font-bold tracking-tight">URL Kit</h1>
         <p className="text-lg text-muted-foreground">
-          URL 구성요소를 관리하고 조합하는 도구. 프로토콜, 서브도메인, 도메인,
-          경로, 쿼리를 자유롭게 구성하세요.
+          URL 구성요소를 관리하고 조합하는 도구. 프로토콜, 서브도메인, 도메인, 경로, 쿼리를 자유롭게
+          구성하세요.
         </p>
       </section>
 
@@ -56,17 +51,14 @@ export default function HomePage() {
         <section>
           <Card className="flex flex-col items-center gap-6 px-8 py-16 text-center">
             <CardHeader className="w-full items-center p-0">
-              <CardTitle className="text-xl">
-                환영합니다! 첫 사이트를 추가해 보세요
-              </CardTitle>
+              <CardTitle className="text-xl">환영합니다! 첫 사이트를 추가해 보세요</CardTitle>
               <CardDescription>
                 사이트를 추가하면 URL 구성요소를 관리하고 조합할 수 있습니다.
               </CardDescription>
             </CardHeader>
             <Button asChild>
               <Link href="/sites/new">
-                <Plus className="mr-2 h-4 w-4" />
-                첫 사이트 추가하기
+                <Plus className="mr-2 h-4 w-4" />첫 사이트 추가하기
               </Link>
             </Button>
           </Card>

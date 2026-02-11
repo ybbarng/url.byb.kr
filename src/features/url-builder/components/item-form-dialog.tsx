@@ -161,33 +161,35 @@ export function ItemFormDialog({
           </p>
           <p className="text-sm break-all">
             <span className="text-muted-foreground mr-1">예시)</span>
-            <span className="font-mono">{CATEGORY_DESCRIPTIONS[category].segments.map((seg, i) => {
-              if (seg.highlight) {
+            <span className="font-mono">
+              {CATEGORY_DESCRIPTIONS[category].segments.map((seg, i) => {
+                if (seg.highlight) {
+                  return (
+                    <span
+                      key={i}
+                      className={`font-bold ${CATEGORY_COLORS[seg.category!].activeText} underline decoration-2 underline-offset-2`}
+                    >
+                      {seg.text}
+                    </span>
+                  );
+                }
+                if (seg.category) {
+                  return (
+                    <span
+                      key={i}
+                      className={`${CATEGORY_COLORS[seg.category].activeText} opacity-50`}
+                    >
+                      {seg.text}
+                    </span>
+                  );
+                }
                 return (
-                  <span
-                    key={i}
-                    className={`font-bold ${CATEGORY_COLORS[seg.category!].activeText} underline decoration-2 underline-offset-2`}
-                  >
+                  <span key={i} className="text-muted-foreground">
                     {seg.text}
                   </span>
                 );
-              }
-              if (seg.category) {
-                return (
-                  <span
-                    key={i}
-                    className={`${CATEGORY_COLORS[seg.category].activeText} opacity-50`}
-                  >
-                    {seg.text}
-                  </span>
-                );
-              }
-              return (
-                <span key={i} className="text-muted-foreground">
-                  {seg.text}
-                </span>
-              );
-            })}</span>
+              })}
+            </span>
           </p>
         </div>
         <form

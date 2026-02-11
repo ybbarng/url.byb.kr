@@ -63,7 +63,7 @@ export function UrlColumn({ siteId, category, selectedIds, onSelect, highlight }
   const sanitizeValue = (value: string): string => {
     switch (category) {
       case "protocol":
-        return value.replace(/:\/\/$/,  "");
+        return value.replace(/:\/\/$/, "");
       case "subdomain":
         return value.replace(/\.+$/, "");
       case "path":
@@ -129,7 +129,9 @@ export function UrlColumn({ siteId, category, selectedIds, onSelect, highlight }
             onClick={handleAdd}
             className={cn(
               "rounded-md border border-dashed p-2 text-xs text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors",
-              highlight && (!items || items.length === 0) && "animate-pulse border-primary/50 text-foreground",
+              highlight &&
+                (!items || items.length === 0) &&
+                "animate-pulse border-primary/50 text-foreground",
             )}
           >
             항목 추가
