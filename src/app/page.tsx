@@ -102,10 +102,10 @@ export default function HomePage() {
             </section>
           ) : (
             <section className="rounded-lg border border-dashed p-8 text-center">
-              <p className="font-medium">저장된 프리셋이 없습니다</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                URL 빌더에서 조합을 저장해 보세요
-              </p>
+              <p className="text-muted-foreground">저장된 프리셋이 없습니다</p>
+              <Button asChild variant="link" className="mt-2">
+                <Link href="/builder">URL 빌더에서 조합을 저장해 보세요</Link>
+              </Button>
             </section>
           )}
         </>
