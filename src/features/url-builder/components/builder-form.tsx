@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { createPreset } from "@/lib/db/repositories/preset-repository";
+import { useCreatePreset } from "@/features/presets/hooks/use-presets";
 import { buildUrl } from "@/lib/url";
 import type { Preset } from "@/types/preset";
 import type { UrlItem, UrlItemCategory } from "@/types/url-item";
@@ -34,6 +34,7 @@ export function BuilderForm({ siteId }: BuilderFormProps) {
     queryIds: [],
   });
   const [presetDialogOpen, setPresetDialogOpen] = useState(false);
+  const createPreset = useCreatePreset();
 
   // 카테고리별 아이템 분류
   const itemsByCategory = useMemo(() => {
@@ -111,7 +112,7 @@ export function BuilderForm({ siteId }: BuilderFormProps) {
     [],
   );
 
-  const handleSavePreset = async (name: string) => {
+  const handleSavePreset = (name: string) => {
     if (!effectiveProtocolId || !selection.domainId) {
       toast.error("프로토콜과 도메인은 필수입니다");
       return;
@@ -132,9 +133,12 @@ export function BuilderForm({ siteId }: BuilderFormProps) {
       updatedAt: now,
     };
 
-    await createPreset(preset);
-    toast.success("프리셋이 저장되었습니다");
-    setPresetDialogOpen(false);
+    createPreset.mutate(preset, {
+      onSuccess: () => {
+        toast.success("프리셋이 저장되었습니다");
+        setPresetDialogOpen(false);
+      },
+    });
   };
 
   const getSelectedIds = (category: UrlItemCategory): string[] => {

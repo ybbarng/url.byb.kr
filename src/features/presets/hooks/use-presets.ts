@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  createPreset,
   deletePreset,
   getAllPresets,
   getFavoritePresets,
@@ -25,6 +26,18 @@ export function useFavorites() {
   return useQuery({
     queryKey: FAVORITES_KEY,
     queryFn: getFavoritePresets,
+  });
+}
+
+/** 프리셋 생성 */
+export function useCreatePreset() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createPreset,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PRESETS_KEY });
+      queryClient.invalidateQueries({ queryKey: FAVORITES_KEY });
+    },
   });
 }
 
