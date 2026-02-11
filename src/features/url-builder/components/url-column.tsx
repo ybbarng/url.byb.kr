@@ -60,8 +60,24 @@ export function UrlColumn({ siteId, category, selectedIds, onSelect, highlight }
     });
   };
 
+  const sanitizeValue = (value: string): string => {
+    switch (category) {
+      case "protocol":
+        return value.replace(/:\/\/$/,  "");
+      case "subdomain":
+        return value.replace(/\.+$/, "");
+      case "path":
+        return value.replace(/^\/+/, "").replace(/\?+$/, "");
+      case "query":
+        return value.replace(/^\?+/, "");
+      default:
+        return value;
+    }
+  };
+
   const handleSubmit = (values: UrlItemFormValues) => {
     const now = new Date().toISOString();
+    const sanitizedValue = sanitizeValue(values.value.trim());
 
     if (editingItem) {
       updateItem.mutate(
@@ -69,7 +85,7 @@ export function UrlColumn({ siteId, category, selectedIds, onSelect, highlight }
           ...editingItem,
           name: values.name,
           description: values.description ?? "",
-          value: values.value,
+          value: sanitizedValue,
           updatedAt: now,
         },
         {
@@ -84,7 +100,7 @@ export function UrlColumn({ siteId, category, selectedIds, onSelect, highlight }
           category,
           name: values.name,
           description: values.description ?? "",
-          value: values.value,
+          value: sanitizedValue,
           sortOrder: items?.length ?? 0,
           createdAt: now,
           updatedAt: now,
