@@ -4,7 +4,6 @@ import { ExternalLink, Pencil, Star, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { CopyButton } from "@/components/shared/copy-button";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { CATEGORY_COLORS } from "@/features/url-builder/category-colors";
@@ -100,14 +99,9 @@ export function PresetCard({
     <Card>
       <CardHeader className="flex flex-row items-start justify-between gap-2">
         <div className="space-y-1.5 min-w-0">
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-base">{preset.name}</CardTitle>
-            {site && (
-              <Badge variant="outline" className="text-xs shrink-0">
-                {site.name}
-              </Badge>
-            )}
-          </div>
+          <CardTitle className="text-base">
+            {site ? `${site.name} ${preset.name}` : preset.name}
+          </CardTitle>
           {nameSegments.length > 0 && (
             <p className="text-sm truncate">
               {nameSegments.map((seg) => (
