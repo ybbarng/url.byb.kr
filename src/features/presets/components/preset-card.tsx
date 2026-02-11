@@ -29,26 +29,31 @@ export function PresetCard({
   onToggleFavorite,
   onDelete,
 }: PresetCardProps) {
-  const url = useMemo(() => {
-    if (!urlItems || urlItems.length === 0) return "";
+  const { url, nameUrl } = useMemo(() => {
+    if (!urlItems || urlItems.length === 0) return { url: "", nameUrl: "" };
 
     const itemMap = new Map(urlItems.map((item) => [item.id, item]));
     const protocol = itemMap.get(preset.selectedProtocolId);
+    const subdomain = preset.selectedSubdomainId
+      ? (itemMap.get(preset.selectedSubdomainId) ?? null)
+      : null;
     const domain = itemMap.get(preset.selectedDomainId);
+    const path = preset.selectedPathId ? (itemMap.get(preset.selectedPathId) ?? null) : null;
+    const queries = preset.selectedQueryIds
+      .map((id) => itemMap.get(id))
+      .filter((item): item is UrlItem => !!item);
 
-    if (!protocol || !domain) return "";
+    if (!protocol || !domain) return { url: "", nameUrl: "" };
 
-    return buildUrl({
-      protocol,
-      subdomain: preset.selectedSubdomainId
-        ? (itemMap.get(preset.selectedSubdomainId) ?? null)
-        : null,
-      domain,
-      path: preset.selectedPathId ? (itemMap.get(preset.selectedPathId) ?? null) : null,
-      queries: preset.selectedQueryIds
-        .map((id) => itemMap.get(id))
-        .filter((item): item is UrlItem => !!item),
-    });
+    const builtUrl = buildUrl({ protocol, subdomain, domain, path, queries });
+
+    let name = `${protocol.name}://`;
+    if (subdomain) name += `${subdomain.name}.`;
+    name += domain.name;
+    if (path) name += `/${path.name}`;
+    if (queries.length > 0) name += `?${queries.map((q) => q.name).join("&")}`;
+
+    return { url: builtUrl, nameUrl: name };
   }, [urlItems, preset]);
 
   return (
@@ -63,6 +68,7 @@ export function PresetCard({
               </Badge>
             )}
           </div>
+          {nameUrl && <p className="text-sm text-foreground/70 truncate">{nameUrl}</p>}
           <CardDescription className="font-mono text-xs truncate">{url}</CardDescription>
         </div>
 
