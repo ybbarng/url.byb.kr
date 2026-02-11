@@ -159,8 +159,9 @@ export function ItemFormDialog({
           <p className="text-sm text-muted-foreground">
             {CATEGORY_DESCRIPTIONS[category].description}
           </p>
-          <p className="font-mono text-sm break-all">
-            {CATEGORY_DESCRIPTIONS[category].segments.map((seg, i) => {
+          <p className="text-sm break-all">
+            <span className="text-muted-foreground mr-1">예시)</span>
+            <span className="font-mono">{CATEGORY_DESCRIPTIONS[category].segments.map((seg, i) => {
               if (seg.highlight) {
                 return (
                   <span
@@ -186,7 +187,7 @@ export function ItemFormDialog({
                   {seg.text}
                 </span>
               );
-            })}
+            })}</span>
           </p>
         </div>
         <form
