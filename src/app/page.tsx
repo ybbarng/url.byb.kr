@@ -1,6 +1,7 @@
 import { ArrowRight, Layers, Link2, Star } from "lucide-react";
 import Link from "next/link";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FavoriteList } from "@/features/favorites/components/favorite-list";
 
 const features = [
   {
@@ -52,12 +53,10 @@ export default function HomePage() {
         ))}
       </section>
 
-      {/* 즐겨찾기 영역 — 나중에 구현 */}
+      {/* 즐겨찾기 */}
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">즐겨찾기</h2>
-        <p className="text-sm text-muted-foreground">
-          프리셋을 즐겨찾기에 추가하면 여기에서 바로 URL을 열 수 있습니다.
-        </p>
+        <FavoriteList />
       </section>
     </div>
   );
