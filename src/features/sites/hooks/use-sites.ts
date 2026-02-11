@@ -30,7 +30,7 @@ export function useSite(id: string) {
   });
 }
 
-/** 사이트 생성 */
+/** 사이트 생성 (기본 프로토콜 자동 생성 포함) */
 export function useCreateSite() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -53,7 +53,7 @@ export function useUpdateSite() {
   });
 }
 
-/** 사이트 삭제 (연관 프리셋도 함께 삭제) */
+/** 사이트 삭제 (연관 url-items, 프리셋도 함께 삭제) */
 export function useDeleteSite() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -61,6 +61,7 @@ export function useDeleteSite() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: SITES_KEY });
       queryClient.invalidateQueries({ queryKey: ["presets"] });
+      queryClient.invalidateQueries({ queryKey: ["url-items"] });
     },
   });
 }

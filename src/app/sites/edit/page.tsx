@@ -26,7 +26,8 @@ function SiteEditContent() {
   const handleSubmit = (values: SiteFormValues) => {
     const updated: Site = {
       ...site,
-      ...values,
+      name: values.name,
+      description: values.description ?? "",
       updatedAt: new Date().toISOString(),
     };
 
@@ -40,11 +41,7 @@ function SiteEditContent() {
 
   const defaultValues: SiteFormValues = {
     name: site.name,
-    protocol: site.protocol,
-    domain: site.domain,
-    subdomains: site.subdomains,
-    pathSegments: site.pathSegments,
-    queryParams: site.queryParams,
+    description: site.description,
   };
 
   return (

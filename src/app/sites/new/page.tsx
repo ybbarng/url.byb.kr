@@ -14,8 +14,9 @@ export default function NewSitePage() {
   const handleSubmit = (values: SiteFormValues) => {
     const now = new Date().toISOString();
     const site: Site = {
-      ...values,
       id: crypto.randomUUID(),
+      name: values.name,
+      description: values.description ?? "",
       createdAt: now,
       updatedAt: now,
     };
@@ -32,7 +33,9 @@ export default function NewSitePage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">새 사이트</h1>
-        <p className="text-sm text-muted-foreground">URL 템플릿의 구성요소를 정의합니다</p>
+        <p className="text-sm text-muted-foreground">
+          사이트를 생성한 뒤 URL 빌더에서 구성요소를 추가하세요
+        </p>
       </div>
       <SiteForm
         onSubmit={handleSubmit}
