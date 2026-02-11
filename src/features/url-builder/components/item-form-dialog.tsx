@@ -27,29 +27,81 @@ const VALUE_PLACEHOLDERS: Record<UrlItemCategory, string> = {
   query: "예: view=board, lang=ko",
 };
 
+type UrlSegment = { text: string; category?: UrlItemCategory; highlight?: boolean };
+
 const CATEGORY_DESCRIPTIONS: Record<
   UrlItemCategory,
-  { description: string; urlParts: { before: string; highlight: string; after: string } }
+  { description: string; segments: UrlSegment[] }
 > = {
   protocol: {
     description: "웹 주소 맨 앞에 붙는 통신 방식입니다. 보통 https(보안)나 http를 사용합니다.",
-    urlParts: { before: "", highlight: "https", after: "://blog.example.com/posts/123?lang=ko" },
+    segments: [
+      { text: "https", category: "protocol", highlight: true },
+      { text: "://" },
+      { text: "blog", category: "subdomain" },
+      { text: "." },
+      { text: "example.com", category: "domain" },
+      { text: "/" },
+      { text: "posts/123", category: "path" },
+      { text: "?" },
+      { text: "lang=ko", category: "query" },
+    ],
   },
   subdomain: {
     description: "도메인 앞에 붙는 이름으로, 같은 사이트 안에서 영역을 나눌 때 사용합니다.",
-    urlParts: { before: "https://", highlight: "blog", after: ".example.com/posts/123?lang=ko" },
+    segments: [
+      { text: "https", category: "protocol" },
+      { text: "://" },
+      { text: "blog", category: "subdomain", highlight: true },
+      { text: "." },
+      { text: "example.com", category: "domain" },
+      { text: "/" },
+      { text: "posts/123", category: "path" },
+      { text: "?" },
+      { text: "lang=ko", category: "query" },
+    ],
   },
   domain: {
     description: "웹사이트의 고유 주소입니다. 사이트를 찾아가기 위한 핵심 부분입니다.",
-    urlParts: { before: "https://blog.", highlight: "example.com", after: "/posts/123?lang=ko" },
+    segments: [
+      { text: "https", category: "protocol" },
+      { text: "://" },
+      { text: "blog", category: "subdomain" },
+      { text: "." },
+      { text: "example.com", category: "domain", highlight: true },
+      { text: "/" },
+      { text: "posts/123", category: "path" },
+      { text: "?" },
+      { text: "lang=ko", category: "query" },
+    ],
   },
   path: {
     description: "도메인 뒤에 오는 경로로, 사이트 안에서 특정 페이지 위치를 나타냅니다.",
-    urlParts: { before: "https://blog.example.com/", highlight: "posts/123", after: "?lang=ko" },
+    segments: [
+      { text: "https", category: "protocol" },
+      { text: "://" },
+      { text: "blog", category: "subdomain" },
+      { text: "." },
+      { text: "example.com", category: "domain" },
+      { text: "/" },
+      { text: "posts/123", category: "path", highlight: true },
+      { text: "?" },
+      { text: "lang=ko", category: "query" },
+    ],
   },
   query: {
     description: "주소 끝에 ? 뒤로 붙는 추가 정보입니다. 검색어, 필터 등 옵션을 전달합니다.",
-    urlParts: { before: "https://blog.example.com/posts/123?", highlight: "lang=ko", after: "" },
+    segments: [
+      { text: "https", category: "protocol" },
+      { text: "://" },
+      { text: "blog", category: "subdomain" },
+      { text: "." },
+      { text: "example.com", category: "domain" },
+      { text: "/" },
+      { text: "posts/123", category: "path" },
+      { text: "?" },
+      { text: "lang=ko", category: "query", highlight: true },
+    ],
   },
 };
 
@@ -108,17 +160,33 @@ export function ItemFormDialog({
             {CATEGORY_DESCRIPTIONS[category].description}
           </p>
           <p className="font-mono text-sm break-all">
-            <span className="text-muted-foreground">
-              {CATEGORY_DESCRIPTIONS[category].urlParts.before}
-            </span>
-            <span
-              className={`font-bold ${CATEGORY_COLORS[category].activeText} underline decoration-2 underline-offset-2`}
-            >
-              {CATEGORY_DESCRIPTIONS[category].urlParts.highlight}
-            </span>
-            <span className="text-muted-foreground">
-              {CATEGORY_DESCRIPTIONS[category].urlParts.after}
-            </span>
+            {CATEGORY_DESCRIPTIONS[category].segments.map((seg, i) => {
+              if (seg.highlight) {
+                return (
+                  <span
+                    key={i}
+                    className={`font-bold ${CATEGORY_COLORS[seg.category!].activeText} underline decoration-2 underline-offset-2`}
+                  >
+                    {seg.text}
+                  </span>
+                );
+              }
+              if (seg.category) {
+                return (
+                  <span
+                    key={i}
+                    className={`${CATEGORY_COLORS[seg.category].activeText} opacity-50`}
+                  >
+                    {seg.text}
+                  </span>
+                );
+              }
+              return (
+                <span key={i} className="text-muted-foreground">
+                  {seg.text}
+                </span>
+              );
+            })}
           </p>
         </div>
         <form
