@@ -4,6 +4,8 @@ import { ExternalLink } from "lucide-react";
 import { CopyButton } from "@/components/shared/copy-button";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import type { UrlItemCategory } from "@/types/url-item";
+import { CATEGORY_COLORS } from "../category-colors";
 
 interface UrlPreviewProps {
   url: string;
@@ -18,18 +20,21 @@ interface UrlPreviewProps {
 function Part({
   value,
   placeholder,
+  category,
   className,
 }: {
   value: string | null;
   placeholder: string;
+  category: UrlItemCategory;
   className?: string;
 }) {
   const active = !!value;
+  const colors = CATEGORY_COLORS[category];
   return (
     <span
       className={cn(
         "inline-block shrink-0 whitespace-nowrap rounded px-1 py-0.5 transition-colors",
-        active ? "bg-primary/15 text-foreground" : "text-muted-foreground/50",
+        active ? `${colors.activeBg} ${colors.activeText}` : "text-muted-foreground/50",
         className,
       )}
     >
@@ -70,17 +75,18 @@ export function UrlPreview({
     <div className="space-y-3 rounded-lg border bg-muted/50 p-4">
       {/* URL 구조 시각화 */}
       <div className="flex items-center gap-0 overflow-hidden font-mono text-sm leading-relaxed">
-        <Part value={protocolValue} placeholder="프로토콜" />
+        <Part value={protocolValue} placeholder="프로토콜" category="protocol" />
         <Separator active={hasProtocol}>://</Separator>
-        <Part value={subdomainValue} placeholder="서브도메인" />
+        <Part value={subdomainValue} placeholder="서브도메인" category="subdomain" />
         <Separator active={hasSubdomain}>.</Separator>
-        <Part value={domainValue} placeholder="도메인" />
+        <Part value={domainValue} placeholder="도메인" category="domain" />
         <Separator active={hasDomain}>/</Separator>
-        <Part value={pathValue} placeholder="경로" />
+        <Part value={pathValue} placeholder="경로" category="path" />
         <Separator active={hasQuery}>?</Separator>
         <Part
           value={hasQuery ? queryString : null}
           placeholder="쿼리"
+          category="query"
           className="shrink truncate min-w-0"
         />
       </div>

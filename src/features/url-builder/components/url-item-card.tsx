@@ -4,6 +4,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { UrlItem, UrlItemCategory } from "@/types/url-item";
+import { CATEGORY_COLORS } from "../category-colors";
 
 interface UrlItemCardProps {
   item: UrlItem;
@@ -28,7 +29,7 @@ export function UrlItemCard({
       className={cn(
         "group flex w-full items-center gap-2 rounded-md border px-3 py-2 transition-colors",
         isSelected
-          ? "border-primary bg-primary/10 ring-1 ring-primary"
+          ? `${CATEGORY_COLORS[category].border} ${CATEGORY_COLORS[category].activeBg} ring-1 ${CATEGORY_COLORS[category].ring}`
           : "hover:border-muted-foreground/30",
       )}
     >

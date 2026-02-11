@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import type { UrlItem, UrlItemCategory } from "@/types/url-item";
+import { CATEGORY_COLORS } from "../category-colors";
 import {
   useCreateUrlItem,
   useDeleteUrlItem,
@@ -94,7 +96,9 @@ export function UrlColumn({ siteId, category, selectedIds, onSelect }: UrlColumn
 
   return (
     <div className="flex flex-col gap-2">
-      <h3 className="text-sm font-semibold">{CATEGORY_LABELS[category]}</h3>
+      <h3 className={cn("text-sm font-semibold", CATEGORY_COLORS[category].activeText)}>
+        {CATEGORY_LABELS[category]}
+      </h3>
 
       {isLoading ? (
         <p className="text-xs text-muted-foreground">불러오는 중...</p>
